@@ -47,7 +47,7 @@ impl ZcashAccountPrivKey {
     pub fn derive_external_secret_key(&self, child_index: u32) -> ZcashResult<Arc<SecpSecretKey>> {
         let secret = self
             .0
-            .derive_external_secret_key(child_index)
+            .derive_external_secret_key(child_index, String::from("kor"))
             .map_err(ZcashError::from)?;
         Ok(Arc::new(secret.into()))
     }

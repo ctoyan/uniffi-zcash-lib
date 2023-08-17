@@ -17,3 +17,11 @@ zcash_proofs = { version = "0.10.0" }
 lto = true
 panic = 'abort'
 codegen-units = 1
+
+[patch.crates-io]
+zcash_address = { path = "../../librustzcash/components/zcash_address", version = "0.2.0"}
+zcash_primitives = { path = "../../librustzcash/zcash_primitives", version = "0.10.0", features = ["transparent-inputs"] }
+zcash_client_backend = { path = "../../librustzcash/zcash_client_backend", features = [
+    "transparent-inputs",
+    "unstable",
+]}
