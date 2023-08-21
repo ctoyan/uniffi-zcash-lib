@@ -7,6 +7,18 @@ jobs:
   get-release:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: zcash/librustzcash
+          path: librustzcash
+      - uses: actions/checkout@v2
+        with:
+          repository: eigerco/uniffi-zcash-lib
+          path: uniffi-zcash-lib
+
+      - name: ls
+        run: ls -la
+
       - name: Install cargo
         uses: actions-rs/toolchain@v1
         with:
@@ -18,14 +30,14 @@ jobs:
       - name: Kor
         run: echo "kor=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | .name' | xargs -I {} sh -c "cd ../uniffi-zcash-lib/lib/uniffi-zcash; cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u")" >> "GITHUB_ENV"
 
-      - name: Get the latest zcash_primitives release version
-        run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
-
-      - name: Get the latest zcash_proofs release version
-        run: echo "latest_zcash_proofs_ver=$(curl https://crates.io/api/v1/crates/zcash_proofs | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
-
-      - name: Get the latest zcash_client_backend release version
-        run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
+      # - name: Get the latest zcash_primitives release version
+      #   run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
+      #
+      # - name: Get the latest zcash_proofs release version
+      #   run: echo "latest_zcash_proofs_ver=$(curl https://crates.io/api/v1/crates/zcash_proofs | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
+      #
+      # - name: Get the latest zcash_client_backend release version
+      #   run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
       - name: Test version get
         run: echo $kor
