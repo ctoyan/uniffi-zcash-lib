@@ -18,5 +18,11 @@ jobs:
       - name: Get the latest zcash_primitives release version
         run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
+      - name: Get the latest zcash_proofs release version
+        run: echo "latest_zcash_proofs_ver=$(curl https://crates.io/api/v1/crates/zcash_proofs | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
+
+      - name: Get the latest zcash_client_backend release version
+        run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
+
       - name: Test version get
         run: echo $latest_zcash_primitives_ver
