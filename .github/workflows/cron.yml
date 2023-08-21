@@ -5,8 +5,8 @@ on:
 
 jobs:
   get-release:
-    - name: Install cargo
     - uses: actions-rs/toolchain@v1
+      name: Install cargo
       with:
         toolchain: stable
 
