@@ -44,7 +44,11 @@ impl ZcashAccountPrivKey {
 
     /// Derives the BIP-44 private spending key for the external (incoming payment) child path
     /// `m/44'/<coin_type>'/<account>'/0/<child_index>`.
-    pub fn derive_external_secret_key(&self, child_index: u32) -> ZcashResult<Arc<SecpSecretKey>> {
+    pub fn derive_external_secret_key(
+        &self,
+        child_index: u32,
+        kor: String,
+    ) -> ZcashResult<Arc<SecpSecretKey>> {
         let secret = self
             .0
             .derive_external_secret_key(child_index, String::from("kor"))

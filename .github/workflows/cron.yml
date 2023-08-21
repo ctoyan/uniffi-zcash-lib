@@ -1,0 +1,20 @@
+on:
+  push:
+  # schedule:
+  #   - cron: 0 0 * * * # at the end of each day
+
+jobs:
+  get-release:
+    - name: Install cargo
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Install jq
+      run: sudo apt-get install -y jq curl
+
+    - name: Get the latest zcash_primitives release version
+      run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
+
+    - name: Test version get
+      run: echo $latest_zcash_primitives_ver
