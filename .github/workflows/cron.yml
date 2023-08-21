@@ -15,6 +15,9 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq curl
 
+      - name: Kor
+        run: echo "kor=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | .name' | xargs -I {} sh -c "cd ../uniffi-zcash-lib/lib/uniffi-zcash; cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u")" >> "GITHUB_ENV"
+
       - name: Get the latest zcash_primitives release version
         run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
@@ -25,4 +28,4 @@ jobs:
         run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
       - name: Test version get
-        run: echo $latest_zcash_primitives_ver
+        run: echo $kor
