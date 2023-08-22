@@ -17,7 +17,9 @@ jobs:
           path: uniffi-zcash-lib
 
       - name: ls
-        run: ls -la
+        run: |
+          ls -la
+          pwd
 
       - name: Install cargo
         uses: actions-rs/toolchain@v1
@@ -27,7 +29,7 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq curl
 
-      - name: Kor
+      - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           {
             echo 'KOR<<EOF'
@@ -47,4 +49,4 @@ jobs:
       #   run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
       - name: Test version get
-        run: echo $KOR
+        run: echo $KOR | wc -l
