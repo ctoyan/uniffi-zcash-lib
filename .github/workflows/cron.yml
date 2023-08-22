@@ -30,7 +30,8 @@ jobs:
       - name: Kor
         run: |
           {
-            echo "kor=$(cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u")"
+            echo 'KOR<<EOF'
+            $(cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u")"
             echo EOF
           } >> "$GITHUB_ENV"
 
@@ -44,4 +45,4 @@ jobs:
       #   run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
       - name: Test version get
-        run: echo $kor
+        run: echo $KOR
