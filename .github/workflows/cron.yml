@@ -20,6 +20,7 @@ jobs:
         run: |
           ls -la
           pwd
+          bash --version
 
       - name: Install cargo
         uses: actions-rs/toolchain@v1
@@ -32,21 +33,34 @@ jobs:
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           {
-            echo 'KOR<<EOF'
+            echo 'USED_LIBS<<EOF'
               cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/librustzcash/Cargo.toml | \
               jq -r '.packages[] | .name' | \
               xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
             echo EOF
           } >> "$GITHUB_ENV"
 
-      # - name: Get the latest zcash_primitives release version
-      #   run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
-      #
-      # - name: Get the latest zcash_proofs release version
-      #   run: echo "latest_zcash_proofs_ver=$(curl https://crates.io/api/v1/crates/zcash_proofs | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
-      #
-      # - name: Get the latest zcash_client_backend release version
-      #   run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
-
       - name: Test version get
-        run: echo "$KOR" | wc -l
+        run: |
+          IFS=$'\n' read -r -d '' -A env_var_list <<< "$KOR"
+
+          for crate_name in "${env_var_list[@]}"; do
+              if [ -z "$crate_name" ]
+              then
+                  continue
+              fi
+              export CRATE_LATEST_VERSION=$(curl --silent https://crates.io/api/v1/crates/$crate_name  | jq -r '.crate.max_stable_version')
+              export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=../uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
+
+
+              if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
+                  echo "$crate_name is up to date. Nothing to do."
+                  exit 0
+              else
+                  echo "$crate_name is out of date."
+                  echo latest - $CRATE_LATEST_VERSION
+                  echo current - $CRATE_CURRENT_VERSION
+                  git checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
+                  cargo -q public-api -p $crate_name -sss diff $CRATE_CURRENT_VERSION
+              fi
+          done
