@@ -42,7 +42,7 @@ jobs:
 
       - name: Test version get
         run: |
-          IFS=$'\n' read -r -d '' -A env_var_list <<< "$KOR"
+          IFS=$'\n' read -r -d '' -A env_var_list <<< "$USED_LIBS"
 
           for crate_name in "${env_var_list[@]}"; do
               if [ -z "$crate_name" ]
