@@ -49,4 +49,4 @@ jobs:
       #   run: echo "latest_zcash_client_backend_ver=$(curl https://crates.io/api/v1/crates/zcash_client_backend | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
 
       - name: Test version get
-        run: echo $KOR | wc -l
+        run: echo "$KOR" | wc -l
