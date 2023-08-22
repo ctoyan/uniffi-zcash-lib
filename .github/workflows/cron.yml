@@ -28,7 +28,11 @@ jobs:
         run: sudo apt-get install -y jq curl
 
       - name: Kor
-        run: echo "kor=$(cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u")" >> "$GITHUB_ENV"
+        run: |
+          {
+            echo "kor=$(cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u")"
+            echo EOF
+          } >> "$GITHUB_ENV"
 
       # - name: Get the latest zcash_primitives release version
       #   run: echo "latest_zcash_primitives_ver=$(curl https://crates.io/api/v1/crates/zcash_primitives | jq '.crate.max_stable_version')" >> "$GITHUB_ENV"
