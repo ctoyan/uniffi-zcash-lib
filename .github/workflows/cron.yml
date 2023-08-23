@@ -44,7 +44,7 @@ jobs:
         run: |
           IFS=$'\n' read -r -d '' -a env_var_list <<< "$USED_LIBS"
 
-          for crate_name in "${env_var_list[@]}"; do
+          echo "$USED_LIBS" | while IFS= read -r crate_name; do
               if [ -z "$crate_name" ]; then
                   continue
               fi
