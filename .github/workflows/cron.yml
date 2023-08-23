@@ -42,13 +42,9 @@ jobs:
 
       - name: Check for diffs of outdated versions of librustzcash dependencies and public API changes
         run: |
-          #!/bin/bash
-          set -x
-          echo "KOR4E"
-          echo $USED_LIBS
-          IFS=$'\n' read -r -d '' -a env_var_list <<< "$USED_LIBS"
+          IFS=' ' read -r -a env_var_array <<< "$USED_LIBS"
 
-          echo "$USED_LIBS" | while IFS= read -r crate_name; do
+          for crate_name in "${env_var_array[@]}"; do
               if [ -z "$crate_name" ]; then
                   continue
               fi
