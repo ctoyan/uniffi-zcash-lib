@@ -59,7 +59,9 @@ jobs:
                   echo "$crate_name is out of date."
                   echo "latest - $CRATE_LATEST_VERSION"
                   echo "current - $CRATE_CURRENT_VERSION"
-                  git -C ./librustzcash remote show origin
+                  git -C ./librustzcash ls-remote --tags origin
+                  git -C ./librustzcash fetch --tags
+                  git -C ./librustzcash ls-remote --tags origin
                   git -C ./librustzcash checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
                   cargo -q public-api --manifest-path=./librustzcash -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
               fi
