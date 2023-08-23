@@ -56,7 +56,7 @@ jobs:
 
               if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
                   echo "$crate_name is up to date. Nothing to do."
-                  exit 0
+                  continue
               else
                   echo "$crate_name is out of date."
                   echo "latest - $CRATE_LATEST_VERSION"
