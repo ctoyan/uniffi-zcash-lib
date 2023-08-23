@@ -34,9 +34,9 @@ jobs:
         run: |
           {
             echo 'USED_LIBS<<EOF'
-              cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/librustzcash/Cargo.toml | \
+              cargo metadata --format-version=1 --no-deps --manifest-path=./librustzcash/Cargo.toml | \
               jq -r '.packages[] | .name' | \
-              xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=/home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
+              xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
             echo EOF
           } >> "$GITHUB_ENV"
 
@@ -50,7 +50,7 @@ jobs:
               fi
 
               export CRATE_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$crate_name" | jq -r '.crate.max_stable_version')
-              export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=../uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
+              export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
 
               if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
                   echo "$crate_name is up to date. Nothing to do."
