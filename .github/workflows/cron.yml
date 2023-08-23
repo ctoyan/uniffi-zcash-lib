@@ -45,6 +45,8 @@ jobs:
           IFS=' ' read -r -a env_var_array <<< "$USED_LIBS"
 
           for crate_name in "${env_var_array[@]}"; do
+              echo "CRATE NAME"
+              echo $crate_name
               if [ -z "$crate_name" ]; then
                   continue
               fi
@@ -59,11 +61,11 @@ jobs:
                   echo "$crate_name is out of date."
                   echo "latest - $CRATE_LATEST_VERSION"
                   echo "current - $CRATE_CURRENT_VERSION"
-                  git -C ./librustzcash fetch --tags
+                  git -C ./librustzcash fetch -q --tags
                   git -C ./librustzcash checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
-                  rustup install nightly --profile minimal
-                  cargo +stable install cargo-public-api --locked
-                  cargo -q public-api --manifest-path=./librustzcash/Cargo.toml -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
+                  rustup -q install nightly --profile minimal
+                  cargo +stable -q install cargo-public-api --locked
+                  cargo public-api --manifest-path=./librustzcash/Cargo.toml -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
               fi
           done
 
