@@ -47,26 +47,26 @@ jobs:
           for crate_name in "${env_var_array[@]}"; do
               echo "CRATE NAME"
               echo $crate_name
-              if [ -z "$crate_name" ]; then
-                  continue
-              fi
-
-              export CRATE_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$crate_name" | jq -r '.crate.max_stable_version')
-              export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
-
-              if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
-                  echo "$crate_name is up to date. Nothing to do."
-                  continue
-              else
-                  echo "$crate_name is out of date."
-                  echo "latest - $CRATE_LATEST_VERSION"
-                  echo "current - $CRATE_CURRENT_VERSION"
-                  git -C ./librustzcash fetch -q --tags
-                  git -C ./librustzcash checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
-                  rustup -q install nightly --profile minimal
-                  cargo +stable -q install cargo-public-api --locked
-                  cargo public-api --manifest-path=./librustzcash/Cargo.toml -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
-              fi
+              # if [ -z "$crate_name" ]; then
+              #     continue
+              # fi
+              #
+              # export CRATE_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$crate_name" | jq -r '.crate.max_stable_version')
+              # export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
+              #
+              # if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
+              #     echo "$crate_name is up to date. Nothing to do."
+              #     continue
+              # else
+              #     echo "$crate_name is out of date."
+              #     echo "latest - $CRATE_LATEST_VERSION"
+              #     echo "current - $CRATE_CURRENT_VERSION"
+              #     git -C ./librustzcash fetch -q --tags
+              #     git -C ./librustzcash checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
+              #     rustup -q install nightly --profile minimal
+              #     cargo +stable -q install cargo-public-api --locked
+              #     cargo public-api --manifest-path=./librustzcash/Cargo.toml -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
+              # fi
           done
 
           # TO READ ON MAC (DELETE LATER)
