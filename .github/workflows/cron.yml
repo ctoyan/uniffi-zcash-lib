@@ -45,22 +45,23 @@ jobs:
           IFS=$'\n' read -r -d '' -a env_var_list <<< "$USED_LIBS"
 
           for crate_name in "${env_var_list[@]}"; do
-              if [ -z "$crate_name" ]
-              then
-                  continue
-              fi
-              export CRATE_LATEST_VERSION=$(curl --silent https://crates.io/api/v1/crates/$crate_name  | jq -r '.crate.max_stable_version')
-              export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=../uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
-
-
-              if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
-                  echo "$crate_name is up to date. Nothing to do."
-                  exit 0
-              else
-                  echo "$crate_name is out of date."
-                  echo latest - $CRATE_LATEST_VERSION
-                  echo current - $CRATE_CURRENT_VERSION
-                  git checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
-                  cargo -q public-api -p $crate_name -sss diff $CRATE_CURRENT_VERSION
-              fi
+            echo $crate_name
+              # if [ -z "$crate_name" ]
+              # then
+              #     continue
+              # fi
+              # export CRATE_LATEST_VERSION=$(curl --silent https://crates.io/api/v1/crates/$crate_name  | jq -r '.crate.max_stable_version')
+              # export CRATE_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=../uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg crate_name "$crate_name" '.packages[] | select(.name == $crate_name) | .version')
+              #
+              #
+              # if [ "$CRATE_LATEST_VERSION" = "$CRATE_CURRENT_VERSION" ]; then
+              #     echo "$crate_name is up to date. Nothing to do."
+              #     exit 0
+              # else
+              #     echo "$crate_name is out of date."
+              #     echo latest - $CRATE_LATEST_VERSION
+              #     echo current - $CRATE_CURRENT_VERSION
+              #     git checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
+              #     cargo -q public-api -p $crate_name -sss diff $CRATE_CURRENT_VERSION
+              # fi
           done
