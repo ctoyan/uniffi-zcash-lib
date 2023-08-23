@@ -68,7 +68,7 @@ jobs:
                   git -C ./librustzcash checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
                   rustup -q install nightly --profile minimal
                   cargo +stable -q install cargo-public-api --locked
-                  cargo public-api --manifest-path=./librustzcash/Cargo.toml -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
+                  cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$crate_name" -sss diff "$CRATE_CURRENT_VERSION"
               fi
           done
 
