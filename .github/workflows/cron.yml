@@ -43,7 +43,9 @@ jobs:
       - name: Check for diffs of outdated versions of librustzcash dependencies and public API changes
         run: |
           echo $USED_LIBS
-          read -ra arr -d '' <<<"$USED_LIBS"
+          USED_LIBS=echo $USED_LIBS | tr '\n' ' '
+          echo $USED_LIBS
+          read -ra arr <<<"$USED_LIBS"
           # IFS=' ' read -r -a env_var_array <<< "$USED_LIBS"
 
           for crate_name in "${arr[@]}"; do
