@@ -44,9 +44,6 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          export TERM=xterm-color
-          export CLICOLOR_FORCE=1
-
           # TODO: Not sure why separating by spaces only itererates over the fisrst element
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
