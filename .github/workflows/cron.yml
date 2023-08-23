@@ -42,8 +42,8 @@ jobs:
 
       - name: Check for diffs of outdated versions of librustzcash dependencies and public API changes
         run: |
+          # TODO: Not sure why separating by spaces only itererates over the fisrst element
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
-          echo $USED_LIBS
           IFS=';' read -ra arr <<< "$USED_LIBS"
           # IFS=' ' read -r -a env_var_array <<< "$USED_LIBS"
 
