@@ -41,9 +41,8 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Check for diffs of outdated versions of librustzcash dependencies and public API changes
-        tty: true
         run: |
-          export TERM=xterm-256color
+          export TERM=xterm-color
           export CLICOLOR_FORCE=1
 
           # TODO: Not sure why separating by spaces only itererates over the fisrst element
