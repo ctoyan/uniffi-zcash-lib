@@ -27,7 +27,7 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Install jq
+      - name: Install linux tools
         run: sudo apt-get install -y jq curl
 
       - name: Get librustzcash libraries used in uniffi-zcash-lib
@@ -42,10 +42,13 @@ jobs:
 
       - name: Test version get
         run: |
-          IFS=$'\n' read -r -d '' -a env_var_list <<< "$USED_LIBS"
+          while IFS= read -r line; do
+              echo "$line"
+          done <<< "$USED_LIBS"
+          # IFS=$'\n' read -r -d '' -a env_var_list <<< "$USED_LIBS"
 
-          for crate_name in "${env_var_list[@]}"; do
-            echo $crate_name
+          # for crate_name in "${env_var_list[@]}"; do
+            # echo $crate_name
               # if [ -z "$crate_name" ]
               # then
               #     continue
@@ -64,4 +67,4 @@ jobs:
               #     git checkout -q tags/$crate_name-$CRATE_LATEST_VERSION
               #     cargo -q public-api -p $crate_name -sss diff $CRATE_CURRENT_VERSION
               # fi
-          done
+          # done
