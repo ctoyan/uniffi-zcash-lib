@@ -44,8 +44,7 @@ jobs:
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
-          cargo clean
-          cargo install --locked cargo-outdated
+          cd ./uniffi-zcash-lib/lib
           # Construct the initial part of the command
           cmd_args=("cargo" "outdated" "--manifest-path=./uniffi-zcash-lib/lib/Cargo.toml")
 
