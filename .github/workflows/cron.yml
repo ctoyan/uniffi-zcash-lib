@@ -65,7 +65,7 @@ jobs:
             #   echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
             # fi
           done
-          cmd_string = "$cmd_string --format json | jq 'select(.crate_name|startswith(\"uniffi-\")) | .dependencies[].name'"
+          cmd_string="$cmd_string --format json | jq 'select(.crate_name|startswith(\"uniffi-\")) | .dependencies[].name'"
           echo $cmd_string
       #
       # - name: Diff public API changes between outdated libs
