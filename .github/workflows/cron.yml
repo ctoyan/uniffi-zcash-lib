@@ -59,11 +59,11 @@ jobs:
 
             if [ "$LIB_LATEST_VERSION" = "$LIB_CURRENT_VERSION" ]; then
               LIBS_WITHOUT_DIFF="${LIBS_WITHOUT_DIFF}${lib_name};"
-              # LIBS_WITHOUT_DIFF="${LIBS_WITHOUT_DIFF%;}" # remove last ; char
+              LIBS_WITHOUT_DIFF="${LIBS_WITHOUT_DIFF%;}" # remove last ; char
               echo "LIBS_WITHOUT_DIFF=$LIBS_WITHOUT_DIFF" >> $GITHUB_ENV
             else
               LIBS_WITH_DIFF="${LIBS_WITH_DIFF}${lib_name};"
-              # LIBS_WITH_DIFF="${LIBS_WITH_DIFF%;}" # remove last ; char
+              LIBS_WITH_DIFF="${LIBS_WITH_DIFF%;}" # remove last ; char
               echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
             fi
           done
