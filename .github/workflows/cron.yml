@@ -60,6 +60,7 @@ jobs:
             fi
           done
 
+      # public-api needs nightly installed so public-api can use rustdoc JSON output
       - name: Install nightly Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -70,7 +71,9 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          components: public-api
+          args: |
+            install cargo-public-api --locked
+            -q
 
       - name: Diff public API changes between outdated libs
         env:
