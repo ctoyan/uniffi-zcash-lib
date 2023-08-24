@@ -41,6 +41,9 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
+          ls -la
+          pwd
+          cat ./uniffi-zcash-lib/lib/Cargo.toml
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
