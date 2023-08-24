@@ -66,6 +66,9 @@ jobs:
           done
 
           cmd_string="$cmd_string --format json | jq -r 'select(.crate_name | startswith(\"uniffi-\")).dependencies[] | select(.project != .latest)'"
+          echo $cmd_string
+
+          cargo install --locked cargo-outdated
           LIBS_WITH_DIFF=$(eval "$cmd_string")
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
