@@ -65,23 +65,21 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          echo $LIBS_WITH_DIFF
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
           for lib_name in "${arr[@]}"; do
-            echo $lib_name
-            # if [ -z "$lib_name" ]; then
-            #   continue
-            # fi
-            #
-            # export LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-            # export LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-            #
-            # echo "OUT OF DATE"
-            # echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
-            # git -C ./librustzcash fetch -q --tags
-            # git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
-            # cargo +stable -q install cargo-public-api --locked
-            # cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > test
-            # cat test
+            if [ -z "$lib_name" ]; then
+              continue
+            fi
+
+            export LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            export LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+
+            echo "OUT OF DATE"
+            echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
+            git -C ./librustzcash fetch -q --tags
+            git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
+            cargo +stable -q install cargo-public-api --locked
+            cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > test
+            cat test
           done
