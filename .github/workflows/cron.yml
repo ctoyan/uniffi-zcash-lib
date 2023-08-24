@@ -54,7 +54,7 @@ jobs:
           done
 
           "${cmd_args[@]}" > output.json
-          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)' output.json
+          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' output.json
       #     echo $cmd_args
       #     # Execute the constructed command and pipe its output to jq
       #     LIBS_WITH_DIFF=$("${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)')
