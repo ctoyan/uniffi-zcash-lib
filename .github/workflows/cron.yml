@@ -59,19 +59,18 @@ jobs:
               echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
             fi
           done
+
       - name: Install nightly Rust
-        uses: github-actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: nightly
 
       - name: Install cargo-public-api
-        uses: github-actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          args: |
-            install cargo-public-api --locked
-            -q
+          components: public-ai
 
       - name: Diff public API changes between outdated libs
         env:
