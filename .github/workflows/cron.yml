@@ -49,7 +49,7 @@ jobs:
 
           cmd_string="cargo outdated"
           for lib_name in "${arr[@]}"; do
-            cmd_string = "$cmd_string -p $lib_name"
+            cmd_string="$cmd_string -p $lib_name"
             # if [ -z "$lib_name" ]; then
             #   continue
             # fi
