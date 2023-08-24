@@ -46,7 +46,7 @@ jobs:
 
           cd ./uniffi-zcash-lib/lib
           # Construct the initial part of the command
-          cmd_args=("cargo" "outdated" "--manifest-path=./uniffi-zcash-lib/lib/Cargo.toml")
+          cmd_args=("cargo" "outdated")
 
           # Loop through each library and add its -p argument
           for lib_name in "${arr[@]}"; do
