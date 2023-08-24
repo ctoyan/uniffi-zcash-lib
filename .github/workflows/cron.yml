@@ -55,8 +55,7 @@ jobs:
 
           echo $cmd_args
           # Execute the constructed command and pipe its output to jq
-          # LIBS_WITH_DIFF=$("${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)')
-          LIBS_WITH_DIFF=$("${cmd_args[@]}")
+          LIBS_WITH_DIFF=$("${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
