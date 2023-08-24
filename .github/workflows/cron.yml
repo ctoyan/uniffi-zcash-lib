@@ -34,7 +34,7 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
-      - name: Check for diffs of outdated versions of librustzcash dependencies and public API changes
+      - name: Check for for outdated librustzcash lib versions
         env:
           CARGO_TERM_COLOR: always
         run: |
@@ -60,7 +60,21 @@ jobs:
             fi
           done
 
-      - name: Diff public API changes between versions
+      - name: Install nightly toolchain
+        uses: github-actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+
+      - name: Diff public API changes between outdated libs
+        uses: github-actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          args: |
+            install cargo-public-api --locked
+            -q
+        env:
+          CARGO_TERM_COLOR: always
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
@@ -73,11 +87,11 @@ jobs:
             export LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
 
             echo "OUT OF DATE"
-            echo "LIBRARY: $lib_name \n CURRENT VERSION: $LIB_CURRENT_VERSION \n LATEST VERSION: $LIB_LATEST_VERSION \n"
+            echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
             git -C ./librustzcash fetch -q --tags
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
-            rustup -q install nightly --profile minimal # TODO: Try to put this and the next line in the action above
-            cargo +stable -q install cargo-public-api --locked
+            # rustup -q install nightly --profile minimal # TODO: Try to put this and the next line in the action above
+            # cargo +stable -q install cargo-public-api --locked
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION"
           done
                     # TO READ ON MAC (DELETE LATER)
