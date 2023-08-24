@@ -53,7 +53,7 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
 
-          "${cmd_args[@]}"
+          "${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)'
       #     echo $cmd_args
       #     # Execute the constructed command and pipe its output to jq
       #     LIBS_WITH_DIFF=$("${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)')
