@@ -67,14 +67,6 @@ jobs:
           profile: minimal
           toolchain: nightly
 
-      - name: Install cargo-public-api
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          args: |
-            install cargo-public-api --locked
-            -q
-
       - name: Diff public API changes between outdated libs
         env:
           CARGO_TERM_COLOR: always
@@ -93,8 +85,8 @@ jobs:
             echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
             git -C ./librustzcash fetch -q --tags
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
-            # rustup -q install nightly --profile minimal # TODO: Try to put this and the next line in the action above
-            # cargo +stable -q install cargo-public-api --locked
+            rustup show
+            cargo +stable -q install cargo-public-api --locked
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION"
           done
                     # TO READ ON MAC (DELETE LATER)
