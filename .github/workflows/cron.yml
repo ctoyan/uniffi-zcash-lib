@@ -46,7 +46,7 @@ jobs:
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
-          cmd_string="cargo outdated"
+          cmd_string="cargo outdated --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml"
           for lib_name in "${arr[@]}"; do
             cmd_string="$cmd_string -p $lib_name"
             # if [ -z "$lib_name" ]; then
