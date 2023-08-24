@@ -45,6 +45,7 @@ jobs:
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
           cargo clean
+          cargo install --locked cargo-outdated
           # Construct the initial part of the command
           cmd_args=("cargo" "outdated" "--manifest-path=./uniffi-zcash-lib/lib/Cargo.toml")
 
@@ -53,6 +54,7 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
 
+          echo $cmd_args
           # Execute the constructed command and pipe its output to jq
           # LIBS_WITH_DIFF=$("${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)')
           LIBS_WITH_DIFF=$("${cmd_args[@]}")
