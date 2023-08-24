@@ -52,12 +52,8 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
 
-          # Add the remaining parts of the command
-          cmd_args+=("--format" "json")
-          cmd_args+=("|" "jq" "-r" "select(.crate_name | startswith(\"uniffi-\")).dependencies[] | select(.project != .latest)")
-
-          # Execute the constructed command and capture the output
-          LIBS_WITH_DIFF=$( "${cmd_args[@]}" )
+          # Execute the constructed command and pipe its output to jq
+          LIBS_WITH_DIFF=$("${cmd_args[@]}" | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest)')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
