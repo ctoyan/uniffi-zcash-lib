@@ -41,35 +41,23 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          # Separating by spaces itererates over the fisrst element only
-          # So we replace ' ' with ';' and then split by ';'
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
-          cmd_string="cargo outdated --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml"
+          # Construct the initial part of the command
+          cmd_args=("cargo" "outdated" "--manifest-path=./uniffi-zcash-lib/lib/Cargo.toml")
+
+          # Loop through each library and add its -p argument
           for lib_name in "${arr[@]}"; do
-            cmd_string="$cmd_string -p $lib_name"
-            # if [ -z "$lib_name" ]; then
-            #   continue
-            # fi
-            #
-            # export LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-            # export LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-            #
-            # if [ "$LIB_LATEST_VERSION" = "$LIB_CURRENT_VERSION" ]; then
-            #   LIBS_UP_TO_DATE="${LIBS_UP_TO_DATE}${lib_name};"
-            #   echo "LIBS_UP_TO_DATE=$LIBS_UP_TO_DATE" >> $GITHUB_ENV
-            # else
-            #   LIBS_WITH_DIFF="${LIBS_WITH_DIFF}${lib_name};"
-            #   echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
-            # fi
+            cmd_args+=("-p" "$lib_name")
           done
 
-          cmd_string="$cmd_string --format json | jq -r 'select(.crate_name | startswith(\"uniffi-\")).dependencies[] | select(.project != .latest)'"
-          echo $cmd_string
+          # Add the remaining parts of the command
+          cmd_args+=("--format" "json")
+          cmd_args+=("|" "jq" "-r" "select(.crate_name | startswith(\"uniffi-\")).dependencies[] | select(.project != .latest)")
 
-          cargo install --locked cargo-outdated
-          LIBS_WITH_DIFF=$(eval "$cmd_string")
+          # Execute the constructed command and capture the output
+          LIBS_WITH_DIFF=$( "${cmd_args[@]}" )
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
