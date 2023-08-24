@@ -57,9 +57,9 @@ jobs:
 
           # Execute the constructed command and pipe its output to jq
           LIBS_WITH_DIFF=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' output.json)
-          echo $LIBS_WITH_DIFF
+          LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
 
-          # echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
+          echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
       - name: Diff public API changes between outdated libs
         env:
