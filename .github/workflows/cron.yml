@@ -25,18 +25,24 @@ jobs:
       - name: Install linux tools
         run: sudo apt-get install -y jq curl
 
+        # Generates env var for next step
+        # USED_LIBS - list of librustzcash library names, separated by ';', which are used in the uniffi projects (ex - 'zcash_primitives;zcash_address;')
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           {
             echo 'USED_LIBS<<EOF'
+              # get the names of all librustzcash packages
               cargo metadata --format-version=1 --no-deps --manifest-path=./librustzcash/Cargo.toml | \
               jq -r '.packages[] | .name' | \
+              # intersect their names with the dependencies from uniffi-zcash-lib,
+              # in order to get the librustzcash libraries used as dependencies in uniffi-zcash-lib
+              # also sort and remove duplicates
               xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
             echo EOF
           } >> "$GITHUB_ENV"
 
-          # Generates env var for next step
-          # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
+        # Generates env var for next step
+        # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
       - name: Check for for outdated librustzcash lib versions
         env:
           CARGO_TERM_COLOR: always
@@ -48,15 +54,18 @@ jobs:
           # Construct the initial part of the command
           cmd_args=("cargo" "outdated" "--format" "json")
 
-          # Loop through each library and add its -p argument
+          # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p" "$lib_name")
           done
 
+          # Put the JSON output of cargo outdated in a file
           "${cmd_args[@]}" > output.json
 
-          # Execute the constructed command and pipe its output to jq
-          LIBS_WITH_DIFF=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' output.json)
+          # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
+          # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
+          # Also sort and remove duplicates
+          LIBS_WITH_DIFF=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' output.json | sort -u)
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
@@ -67,19 +76,21 @@ jobs:
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
+          # use the cargo-public-api tool to diff the public APIs of different versions
+          cargo +stable -q install cargo-public-api --locked
+
           for lib_name in "${arr[@]}"; do
             if [ -z "$lib_name" ]; then
               continue
             fi
 
-            export LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-            export LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+            LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
 
             echo "OUT OF DATE"
             echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
             git -C ./librustzcash fetch -q --tags
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
-            cargo +stable -q install cargo-public-api --locked
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > test
             cat test
           done
