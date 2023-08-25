@@ -62,8 +62,7 @@ jobs:
           # Put the JSON output of cargo outdated in a file
           "${cmd_args[@]}" > output.json
 
-          echo "KOR"
-          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u
+          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u | md5sum
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
           # Also sort and remove duplicates
