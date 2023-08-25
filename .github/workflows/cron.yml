@@ -102,8 +102,6 @@ jobs:
       # # A separate step to show the output, so we can link to it in the issue,
       # # without the extra noise of other commands
       # - name: Show public API diffs
-      #   env:
-      #     CARGO_TERM_COLOR: always
       #   run: |
       #     IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
       #
@@ -117,7 +115,7 @@ jobs:
       #
       - name: Create workflow summary
         env:
-          CARGO_TERM_COLOR: always
+          GH_TOKEN: ${{ github.token }}
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
           gh
@@ -137,5 +135,6 @@ jobs:
             echo ""
           done
 
-          workflow_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/job/${GITHUB_JOB}/#step:9:1"
-          echo $workflow_url
+          # workflow_url=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $github.job) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n")"
+          gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $GITHUB_JOB) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n"
+          # echo $workflow_url
