@@ -70,14 +70,16 @@ jobs:
 
           # Save artifact with data: crate-current_ver-latest_ver
           # In order to use it as a checksum and not create an issue every day if the diff is the same
-          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum_current
+          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum
 
-          echo "KOR"
-          cmp
-          # cmp -s libs_diff_checksum_current libs_diff_checksum
-          # if [ $? -eq 0 ]; then
-          #     echo "QUIT WORKFLOW"
-          # fi
+          # compare if the artifact exits
+          if [ -f libs_diff_checksum_artifact ]; then
+            cmp -s libs_diff_checksum libs_diff_checksum_artifact
+            if [ $? -eq 0 ]; then
+                echo "QUIT WORKFLOW"
+            fi
+          fi
+
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
@@ -90,8 +92,8 @@ jobs:
       - name: Save libs diff checksum as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: libs_diff_checksum
-          path: libs_diff_checksum_current
+          name: libs_diff_checksum_artifact
+          path: libs_diff_checksum
 
       # - name: Diff public API changes between outdated libs
       #   env:
