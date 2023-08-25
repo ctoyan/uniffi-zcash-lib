@@ -84,6 +84,8 @@ jobs:
               continue
             fi
 
+            # this way it's faster in a loop, since cargo output takes some time
+            # to be discussed
             LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
             LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
 
@@ -91,6 +93,22 @@ jobs:
             echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
             git -C ./librustzcash fetch -q --tags
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
-            cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > test
-            cat test
+
+            # write the diff to files, which we show in the next step
+            # the reason is to more easily link the exact diffing section to the issue
+            cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
+          done
+
+      - name: Show public API diffs
+        env:
+          CARGO_TERM_COLOR: always
+        run: |
+          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+
+          for lib_name in "${arr[@]}"; do
+            if [ -z "$lib_name" ]; then
+              continue
+            fi
+            echo "\n ${lib_name} \n"
+            cat "${lib_name}.diff"
           done
