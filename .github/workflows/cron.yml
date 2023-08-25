@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: libs_diff_checksum_artifact
-          path: libs_diff_checksum
+          path: /home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/libs_diff_checksum
 
       # - name: Diff public API changes between outdated libs
       #   env:
