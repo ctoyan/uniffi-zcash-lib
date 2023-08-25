@@ -43,8 +43,8 @@ jobs:
 
       - name: Download libs diff checksum artifact
         uses: actions/download-artifact@v2
-        with:
-          name: /home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/libs_diff_checksum_artifact
+        # with:
+        #   name: libs_diff_checksum_artifact
         continue-on-error: true
 
         # Generates env var for next step
