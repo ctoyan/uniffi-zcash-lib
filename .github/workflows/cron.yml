@@ -41,10 +41,10 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
-      - name: Save libs diff checksum as artifact
+      - name: Download libs diff checksum artifact
         uses: actions/download-artifact@v2
         with:
-          name: libs_diff_checksum
+          name: libs_diff_checksum_artifact
         continue-on-error: true
 
         # Generates env var for next step
@@ -71,6 +71,8 @@ jobs:
           # Save artifact with data: crate-current_ver-latest_ver
           # In order to use it as a checksum and not create an issue every day if the diff is the same
           jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum
+          pwd
+          ls -la
 
           # compare if the artifact exits
           if [ -f libs_diff_checksum_artifact ]; then
