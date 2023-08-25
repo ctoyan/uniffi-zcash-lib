@@ -136,5 +136,6 @@ jobs:
           done
 
           # workflow_url=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $github.job) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n")"
-          gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $GITHUB_JOB) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n"
+          # gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $GITHUB_JOB) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n"
+          gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n"
           # echo $workflow_url
