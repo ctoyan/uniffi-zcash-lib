@@ -71,13 +71,12 @@ jobs:
           # Save artifact with data: crate-current_ver-latest_ver
           # In order to use it as a checksum and not create an issue every day if the diff is the same
           jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum
-          pwd
-          ls -la
 
           # compare if the artifact exits
           if [ -f libs_diff_checksum_artifact ]; then
             cmp -s libs_diff_checksum libs_diff_checksum_artifact
             if [ $? -eq 0 ]; then
+                echo "QUIT WORKFLOW"
                 echo "QUIT WORKFLOW"
             fi
           fi
