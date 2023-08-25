@@ -72,10 +72,12 @@ jobs:
           # In order to use it as a checksum and not create an issue every day if the diff is the same
           jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum_current
 
-          cmp -s libs_diff_checksum_current libs_diff_checksum
-          if [ $? -eq 0 ]; then
-              echo "QUIT WORKFLOW"
-          fi
+          echo "KOR"
+          cmp
+          # cmp -s libs_diff_checksum_current libs_diff_checksum
+          # if [ $? -eq 0 ]; then
+          #     echo "QUIT WORKFLOW"
+          # fi
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
