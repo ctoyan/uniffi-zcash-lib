@@ -62,6 +62,8 @@ jobs:
           # Put the JSON output of cargo outdated in a file
           "${cmd_args[@]}" > output.json
 
+          echo "KOR"
+          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
           # Also sort and remove duplicates
@@ -100,7 +102,8 @@ jobs:
       #     done
       #
       # # A separate step to show the output, so we can link to it in the issue,
-      # # without the extra noise of other commands
+      # # without the extra noise of other commands.
+      # # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       # - name: Show public API diffs
       #   run: |
       #     IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
@@ -112,7 +115,9 @@ jobs:
       #       echo "\n ${lib_name} \n"
       #       cat "${lib_name}.diff"
       #     done
-      #
+
+      # TODO: Discuss if a summary is needed
+      # TODO: Write better formatted markdown and add data
       - name: Create workflow summary
         env:
           GH_TOKEN: ${{ github.token }}
@@ -134,7 +139,20 @@ jobs:
             echo ""
           done
 
-          # workflow_url=$(gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $github.job) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n")"
-          # gh run --repo $GITHUB_REPOSITORY view $GITHUB_RUN_ID --json jobs --jq '.jobs[] | select(.name == $GITHUB_JOB) | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n"
-          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Create workflow summary") | "#step:\(.number):1")' | tr -d "\n")
-          echo $workflow_url
+          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          echo "[VIEW DIFF]($workflow_url)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Construct checksum form libs<>versions - maybe write them to file and checksum the file
+          # Check if checksum exists for these libs<>versions in Check for for outdated librustzcash lib versions
+          # Export checksum as env var from Check for for outdated librustzcash lib versions
+          #
+          # In this workflow:
+          # get env var which contains checksum
+          # if exists - do nothing
+          # if not exists - create issue and save checksum to state
+          # issue can just point to summary or contain the same data. To construct data - add in env var and pass to gh
+          # add appropriate label and tag user
