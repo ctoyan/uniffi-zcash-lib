@@ -120,6 +120,7 @@ jobs:
           CARGO_TERM_COLOR: always
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+          gh
 
           echo "# New versions of librustzcash libraries" >> $GITHUB_STEP_SUMMARY
 
@@ -131,8 +132,8 @@ jobs:
             LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
             LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
 
-            echo "CURRENT - `${lib_name}` -> ${LIB_CURRENT_VERSION}"
-            echo "LATEST  - `${lib_name}` -> ${LIB_LATEST_VERSION}"
+            echo "CURRENT - \`${lib_name}\` -> ${LIB_CURRENT_VERSION}" >> $GITHUB_STEP_SUMMARY
+            echo "LATEST  - \`${lib_name}\` -> ${LIB_LATEST_VERSION}" >> $GITHUB_STEP_SUMMARY
             echo ""
           done
 
