@@ -41,6 +41,11 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
+      - name: Save libs diff checksum as artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: libs_diff_checksum
+
         # Generates env var for next step
         # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
       - name: Check for for outdated librustzcash lib versions
@@ -62,7 +67,15 @@ jobs:
           # Put the JSON output of cargo outdated in a file
           "${cmd_args[@]}" > output.json
 
-          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u | md5sum
+          # Save artifact with data: crate-current_ver-latest_ver
+          # In order to use it as a checksum and not create an issue every day if the diff is the same
+          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum_current
+
+          cmp -s libs_diff_checksum_current libs_diff_checksum
+          if [ $? -eq 0 ]; then
+              echo "QUIT WORKFLOW"
+          fi
+
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
           # Also sort and remove duplicates
@@ -70,6 +83,12 @@ jobs:
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
+
+      - name: Save libs diff checksum as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: libs_diff_checksum
+          path: libs_diff_checksum_current
 
       # - name: Diff public API changes between outdated libs
       #   env:
