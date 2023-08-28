@@ -81,8 +81,7 @@ jobs:
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
-            # TODO: ACtually quit workflow
-            echo "QUIT WORKFLOW"
+            gh run cancel ${{ github.run_id }}
           fi
 
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
