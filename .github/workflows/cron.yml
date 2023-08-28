@@ -66,7 +66,9 @@ jobs:
           # Using those labels, we check if the same issue has not already been created
           ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
           ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
-          echo $ISSUE_LABELS
+          echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
+
+          # Search for an open issue, based on labels.
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "list" "--repo" "ctoyan/uniffi-zcash-lib" "--json" "body") # TODO: We should either remove or replace --repo
           for label in "${arr[@]}"; do
@@ -75,13 +77,13 @@ jobs:
 
           GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
 
-          # When an issue with the same labels is found, stop the workflow
+          # When an issue with the same labels is found, stop the workflow,
+          # because we don't need to diff something we already have an issue for
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
             # TODO: ACtually quit workflow
             echo "QUIT WORKFLOW"
           fi
 
-          # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
           # Also sort and remove duplicates
           LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' | sort -u)
@@ -173,8 +175,4 @@ jobs:
           done
 
           # Put the JSON output of cargo outdated in a file for later use
-          "${cmd_args[@]}" > output.json
-
-          # issue can just point to summary or contain the same data. To construct data - add in env var and pass to gh
-          # add appropriate label and tag user
-          gh issue create --title "" --body "Issue body" --label
+          "${cmd_args[@]}"
