@@ -69,24 +69,19 @@ jobs:
           ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
           echo $ISSUE_LABELS
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          cmd_args=("gh" "issue" "list" "--json" "body")
+          cmd_args=("gh" "issue" "list" "--repo" "ctoyan/uniffi-zcash-lib" "--json" "body") # TODO: We should either remove or replace --repo
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
           done
-
-          for arg in "${cmd_args[@]}"; do
-            echo "$arg"
-          done
-
 
           GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
           echo "GET_ISSUE_OUTPUT_JSON=$GET_ISSUE_OUTPUT_JSON" >> "$GITHUB_ENV"
           echo "GET_ISSUE_OUTPUT_JSON"
           echo $GET_ISSUE_OUTPUT_JSON
 
-          if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
-              echo "QUIT WORKFLOW"
-          fi
+          # if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
+          #     echo "QUIT WORKFLOW"
+          # fi
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
@@ -181,8 +176,6 @@ jobs:
 
           # Put the JSON output of cargo outdated in a file for later use
           "${cmd_args[@]}" > output.json
-
-
 
           # issue can just point to summary or contain the same data. To construct data - add in env var and pass to gh
           # add appropriate label and tag user
