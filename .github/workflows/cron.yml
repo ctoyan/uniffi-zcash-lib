@@ -67,8 +67,6 @@ jobs:
           # Using those labels, we check if the same issue has not already been created
           ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | tr ' ' ';')
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          echo "ISSUE_LABELS"
-          echo $ISSUE_LABELS
           cmd_args=("gh" "issue" "list" "--json" "body")
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
@@ -76,6 +74,8 @@ jobs:
 
           GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
           echo "GET_ISSUE_OUTPUT_JSON=$GET_ISSUE_OUTPUT_JSON" >> "$GITHUB_ENV"
+          echo "GET_ISSUE_OUTPUT_JSON"
+          echo $GET_ISSUE_OUTPUT_JSON
 
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
               echo "QUIT WORKFLOW"
