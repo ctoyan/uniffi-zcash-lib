@@ -51,17 +51,35 @@ jobs:
           # TODO: Don't use cd
           cd ./uniffi-zcash-lib/lib
 
+          # Generate cargo outdated command for all USED_LIBS
+          # and put the JSON output of cargo outdated in a file for later use
+          {
+            echo 'OUTDATED_LIBS_JSON<<EOF'
+              USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
+              IFS=';' read -ra arr <<< "$USED_LIBS"
+              cmd_args=("cargo" "outdated" "--format" "json")
+              for lib_name in "${arr[@]}"; do
+                cmd_args+=("-p" "$lib_name")
+              done
+              "${cmd_args[@]}" > outdated_output.json
+            echo EOF
+          } >> "$GITHUB_ENV"
+
+          echo "OUTDATED_LIBS_JSON"
+          echo $OUTDATED_LIBS_JSON
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
-          ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json  | tr ' ' ';')
-          echo "KOR"
-          echo $ISSUE_LABELS
+          ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' "$OUTDATED_LIBS_JSON" | tr ' ' ';')
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
+          echo "ISSUE_LABELS"
+          echo $ISSUE_LABELS
           cmd_args=("gh" "issue" "list" "--json" "body")
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
           done
           "${cmd_args[@]}" > issue_output.json
+
+          cat issue_output.json
 
           if jq -e '. | select(type == "array" and length == 0)' issue_output.json >/dev/null
           then
@@ -69,20 +87,10 @@ jobs:
           fi
 
 
-          # Generate cargo outdated command for all USED_LIBS
-          # and put the JSON output of cargo outdated in a file for later use
-          USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
-          IFS=';' read -ra arr <<< "$USED_LIBS"
-          cmd_args=("cargo" "outdated" "--format" "json")
-          for lib_name in "${arr[@]}"; do
-            cmd_args+=("-p" "$lib_name")
-          done
-          "${cmd_args[@]}" > output.json
-
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
           # Also sort and remove duplicates
-          LIBS_WITH_DIFF=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' output.json | sort -u)
+          LIBS_WITH_DIFF=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' outdated_output.json | sort -u)
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
