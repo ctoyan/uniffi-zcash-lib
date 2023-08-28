@@ -65,7 +65,7 @@ jobs:
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
-          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | tr ' ' ';')
+          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | tr ' ' ';')
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           echo "ISSUE_LABELS"
           echo $ISSUE_LABELS
