@@ -83,8 +83,10 @@ jobs:
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
-            echo "issue_exists=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            # TODO: Actually cancel the workflow, not exiting with an error
+            # Might be able to happen with job outputs
+            echo "CANCEL WORKFLOW"
+            exit 1
           fi
 
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
@@ -95,7 +97,6 @@ jobs:
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
       - name: Diff public API changes between outdated libs
-        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         env:
           CARGO_TERM_COLOR: always
         run: |
@@ -128,7 +129,6 @@ jobs:
       # without the extra noise of other commands.
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       - name: Show public API diffs
-        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
@@ -136,14 +136,13 @@ jobs:
             if [ -z "$lib_name" ]; then
               continue
             fi
-            echo "\n ${lib_name} \n"
+            echo "${lib_name}" # TODO: Better message
             cat "${lib_name}.diff"
           done
 
       # TODO: Discuss if a summary is needed
       # TODO: Write better formatted markdown and add data
       - name: Create workflow summary
-        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -168,10 +167,10 @@ jobs:
           echo "[VIEW DIFF]($workflow_url)" >> $GITHUB_STEP_SUMMARY
 
       - name: Create issue
-        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # TODO: Make a link to the actual summary section
           workflow_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "[Check workflow summary]($workflow_url)")
