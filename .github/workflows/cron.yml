@@ -114,7 +114,7 @@ jobs:
             echo "OUT OF DATE"
             echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
             git -C ./librustzcash fetch -q --tags
-            git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
+            git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION # TODO: Super sketchy. This counts on the fact that they always name their releases in this format
 
             # write the diff to files, which we show in the next step
             # the reason is to more easily link the exact diffing section to the issue
@@ -166,7 +166,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url')
+          workflow_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "[Check workflow summary]($workflow_url)")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
