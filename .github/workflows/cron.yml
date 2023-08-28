@@ -167,7 +167,7 @@ jobs:
         run: |
           echo $ISSUE_LABELS
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "Issue body")
+          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "\"New versions of librustzcash. Please review.\"" "--body" "\"Issue body\"")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           for lib_name in "${arr[@]}"; do
             cmd_args+=("--label" "$lib_name")
@@ -177,5 +177,4 @@ jobs:
             echo $cmd_arg
           done
 
-          # Put the JSON output of cargo outdated in a file for later use
           "${cmd_args[@]}"
