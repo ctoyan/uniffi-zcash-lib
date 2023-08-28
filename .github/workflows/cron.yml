@@ -66,7 +66,7 @@ jobs:
           # Using those labels, we check if the same issue has not already been created
           ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
           ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
-          echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
+          echo "ISSUE_LABES=$ISSUE_LABELS" >> $GITHUB_ENV
 
           # Search for an open issue, based on labels.
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
@@ -165,9 +165,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # we'll use the issue labels to check that the same is not already created
-          ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json)
-
+          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "create" "--title" "New versions of librustzcash. Please review." "--body" "Issue body")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           for lib_name in "${arr[@]}"; do
