@@ -92,49 +92,49 @@ jobs:
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
-      # - name: Diff public API changes between outdated libs
-      #   env:
-      #     CARGO_TERM_COLOR: always
-      #   run: |
-      #     IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
-      #
-      #     # use the cargo-public-api tool to diff the public APIs of different versions
-      #     cargo +stable -q install cargo-public-api --locked
-      #
-      #     for lib_name in "${arr[@]}"; do
-      #       if [ -z "$lib_name" ]; then
-      #         continue
-      #       fi
-      #
-      #       # this way it's faster in a loop, since cargo output takes some time
-      #       # to be discussed
-      #       LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-      #       LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-      #
-      #       echo "OUT OF DATE"
-      #       echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
-      #       git -C ./librustzcash fetch -q --tags
-      #       git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
-      #
-      #       # write the diff to files, which we show in the next step
-      #       # the reason is to more easily link the exact diffing section to the issue
-      #       cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
-      #     done
-      #
-      # # A separate step to show the output, so we can link to it in the issue,
-      # # without the extra noise of other commands.
-      # # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
-      # - name: Show public API diffs
-      #   run: |
-      #     IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
-      #
-      #     for lib_name in "${arr[@]}"; do
-      #       if [ -z "$lib_name" ]; then
-      #         continue
-      #       fi
-      #       echo "\n ${lib_name} \n"
-      #       cat "${lib_name}.diff"
-      #     done
+      - name: Diff public API changes between outdated libs
+        env:
+          CARGO_TERM_COLOR: always
+        run: |
+          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+
+          # use the cargo-public-api tool to diff the public APIs of different versions
+          cargo +stable -q install cargo-public-api --locked
+
+          for lib_name in "${arr[@]}"; do
+            if [ -z "$lib_name" ]; then
+              continue
+            fi
+
+            # this way it's faster in a loop, since cargo output takes some time
+            # to be discussed
+            LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+
+            echo "OUT OF DATE"
+            echo "LIBRARY: $lib_name | CURRENT VERSION: $LIB_CURRENT_VERSION | LATEST VERSION: $LIB_LATEST_VERSION"
+            git -C ./librustzcash fetch -q --tags
+            git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
+
+            # write the diff to files, which we show in the next step
+            # the reason is to more easily link the exact diffing section to the issue
+            cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
+          done
+
+      # A separate step to show the output, so we can link to it in the issue,
+      # without the extra noise of other commands.
+      # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
+      - name: Show public API diffs
+        run: |
+          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+
+          for lib_name in "${arr[@]}"; do
+            if [ -z "$lib_name" ]; then
+              continue
+            fi
+            echo "\n ${lib_name} \n"
+            cat "${lib_name}.diff"
+          done
 
       # TODO: Discuss if a summary is needed
       # TODO: Write better formatted markdown and add data
@@ -166,9 +166,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo $ISSUE_LABELS
+          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url')
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "\"New versions of librustzcash. Please review.\"" "--body" "\"Issue body\"")
+          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "[Check workflow summary]($workflow_url)")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           for lib_name in "${arr[@]}"; do
             cmd_args+=("--label" "$lib_name")
