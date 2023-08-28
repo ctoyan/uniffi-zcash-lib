@@ -73,7 +73,11 @@ jobs:
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
           done
-          echo $cmd_args
+
+          for arg in "${cmd_args[@]}"; do
+            echo "$arg"
+          done
+
 
           GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
           echo "GET_ISSUE_OUTPUT_JSON=$GET_ISSUE_OUTPUT_JSON" >> "$GITHUB_ENV"
