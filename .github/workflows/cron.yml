@@ -165,12 +165,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          echo $ISSUE_LABELS
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "Issue body")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           for lib_name in "${arr[@]}"; do
-            cmd_args+=("-label" "$lib_name")
+            cmd_args+=("--label" "$lib_name")
           done
+
           for cmd_arg in "${cmd_args[@]}"; do
             echo $cmd_arg
           done
