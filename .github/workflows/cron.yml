@@ -60,8 +60,7 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
 
-          OUTDATED_LIBS_JSON=$("${cmd_args[@]}" | jq -c)
-          echo "OUTDATED_LIBS_JSON=$OUTDATED_LIBS_JSON" >> "$GITHUB_ENV"
+          OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
@@ -76,8 +75,10 @@ jobs:
 
           GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
 
+          # When an issue with the same labels is found, stop the workflow
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
-              echo "QUIT WORKFLOW"
+            # TODO: ACtually quit workflow
+            echo "QUIT WORKFLOW"
           fi
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
