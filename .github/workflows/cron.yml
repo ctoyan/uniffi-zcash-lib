@@ -63,7 +63,7 @@ jobs:
           done
           "${cmd_args[@]}" > issue_output.json
 
-          if jq -e '. | select(type == "array" and length > 0)' issue_output.json >/dev/null
+          if jq -e '. | select(type == "array" and length == 0)' issue_output.json >/dev/null
           then
               echo "QUIT WORKFLOW"
           fi
