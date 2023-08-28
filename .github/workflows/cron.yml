@@ -4,9 +4,11 @@ on:
   #   - cron: 0 0 * * * # at the end of each day
 
 jobs:
-  get-release:
+  get_release:
     runs-on: ubuntu-latest
     permissions: write-all
+    outputs:
+      issue_exists: ${{ steps.step1.outputs.test }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -81,8 +83,8 @@ jobs:
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
-            gh run cancel ${{ github.run_id }}
-            gh run watch ${{ github.run_id }}
+            echo "issue_exists=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
@@ -93,6 +95,7 @@ jobs:
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
       - name: Diff public API changes between outdated libs
+        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         env:
           CARGO_TERM_COLOR: always
         run: |
@@ -125,6 +128,7 @@ jobs:
       # without the extra noise of other commands.
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       - name: Show public API diffs
+        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
@@ -139,6 +143,7 @@ jobs:
       # TODO: Discuss if a summary is needed
       # TODO: Write better formatted markdown and add data
       - name: Create workflow summary
+        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -163,6 +168,7 @@ jobs:
           echo "[VIEW DIFF]($workflow_url)" >> $GITHUB_STEP_SUMMARY
 
       - name: Create issue
+        if: ${{ needs.get_release.outputs.issue_exists != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
