@@ -41,12 +41,11 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
-      - name: Download libs diff checksum artifact
-        uses: actions/download-artifact@v2
-        # with:
-        #   name: libs_diff_checksum_artifact
-        continue-on-error: true
-
+      - name: Check if an issue exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list
         # Generates env var for next step
         # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
       - name: Check for for outdated librustzcash lib versions
@@ -57,7 +56,6 @@ jobs:
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
           cd ./uniffi-zcash-lib/lib
-          # Construct the initial part of the command
           cmd_args=("cargo" "outdated" "--format" "json")
 
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
@@ -65,22 +63,13 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
 
-          # Put the JSON output of cargo outdated in a file
+          # Put the JSON output of cargo outdated in a file for later use
           "${cmd_args[@]}" > output.json
 
-          # Save artifact with data: crate-current_ver-latest_ver
-          # In order to use it as a checksum and not create an issue every day if the diff is the same
-          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+""+.project+""+.latest)' output.json | sort -u > libs_diff_checksum
-
-          # compare if the artifact exits
-          if [ -f libs_diff_checksum_artifact ]; then
-            cmp -s libs_diff_checksum libs_diff_checksum_artifact
-            if [ $? -eq 0 ]; then
-                echo "QUIT WORKFLOW"
-                echo "QUIT WORKFLOW"
-            fi
-          fi
-
+          # When we create an issue we use labels in format - crate_name-current_version-latest_version
+          # Using those labels, we check if the same issue has not already been created
+          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json |
+          xargs -I {} sh -c "gh issue list --label={}; echo {}"
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
@@ -89,12 +78,6 @@ jobs:
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
-
-      - name: Save libs diff checksum as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: libs_diff_checksum_artifact
-          path: /home/runner/work/uniffi-zcash-lib/uniffi-zcash-lib/uniffi-zcash-lib/lib/libs_diff_checksum
 
       # - name: Diff public API changes between outdated libs
       #   env:
@@ -170,10 +153,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Construct checksum form libs<>versions - maybe write them to file and checksum the file
-          # Check if checksum exists for these libs<>versions in Check for for outdated librustzcash lib versions
-          # Export checksum as env var from Check for for outdated librustzcash lib versions
-          #
+          # we'll use the issue labels to check that the same is not already created
+          ISSUE_LABELS=jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json
+
           # In this workflow:
           # get env var which contains checksum
           # if exists - do nothing
