@@ -172,7 +172,7 @@ jobs:
             cmd_args+=("-label" "$lib_name")
           done
           for cmd_arg in "${cmd_args[@]}"; do
-            echo cmd_arg
+            echo $cmd_arg
           done
 
           # Put the JSON output of cargo outdated in a file for later use
