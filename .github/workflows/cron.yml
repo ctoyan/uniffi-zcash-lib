@@ -7,8 +7,6 @@ jobs:
   get_release:
     runs-on: ubuntu-latest
     permissions: write-all
-    outputs:
-      issue_exists: ${{ steps.step1.outputs.test }}
     steps:
       - uses: actions/checkout@v2
         with:
