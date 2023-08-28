@@ -48,15 +48,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CARGO_TERM_COLOR: always
         run: |
-          USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
-          IFS=';' read -ra arr <<< "$USED_LIBS"
-
           # TODO: Don't use cd
           cd ./uniffi-zcash-lib/lib
 
-
           # Generate cargo outdated command for all USED_LIBS
           # and put the JSON output of cargo outdated in a file for later use
+          USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
+          IFS=';' read -ra arr <<< "$USED_LIBS"
           cmd_args=("cargo" "outdated" "--format" "json")
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p" "$lib_name")
@@ -65,8 +63,15 @@ jobs:
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
-          jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json |
-          xargs -I {} sh -c "gh issue list --label={}; echo {}"
+          ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json  | tr ' ' ';')
+          echo "KOR"
+          echo ISSUE_LABELS
+          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
+          cmd_args=("gh" "issue" "list")
+          for label in "${arr[@]}"; do
+            cmd_args+=("--label" "$label")
+          done
+          "${cmd_args[@]}"
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
@@ -151,7 +156,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # we'll use the issue labels to check that the same is not already created
-          ISSUE_LABELS=jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json
+          ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json)
 
           cmd_args=("gh" "issue" "create" "--title" "New versions of librustzcash. Please review." "--body" "Issue body")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
