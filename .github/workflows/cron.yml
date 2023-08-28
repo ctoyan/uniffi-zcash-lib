@@ -82,6 +82,7 @@ jobs:
           # because we don't need to diff something we already have an issue for
           if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
             gh run cancel ${{ github.run_id }}
+            gh run watch ${{ github.run_id }}
           fi
 
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
