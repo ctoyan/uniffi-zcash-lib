@@ -177,4 +177,6 @@ jobs:
             echo $cmd_arg
           done
 
+          gh --version
+
           "${cmd_args[@]}"
