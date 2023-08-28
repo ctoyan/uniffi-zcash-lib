@@ -59,32 +59,31 @@ jobs:
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p" "$lib_name")
           done
-          {
-            echo 'OUTDATED_LIBS_JSON<<EOF'
-             "${cmd_args[@]}"
-            echo EOF
-          } >> "$GITHUB_ENV"
+          OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
+
+          echo "OUTDATED_LIBS_JSON=$OUTDATED_LIBS_JSON" >> "$GITHUB_ENV"
 
           echo "OUTDATED_LIBS_JSON"
-          echo $OUTDATED_LIBS_JSON
+          echo "$OUTDATED_LIBS_JSON"
+
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
-          ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' "$OUTDATED_LIBS_JSON" | tr ' ' ';')
-          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          echo "ISSUE_LABELS"
-          echo $ISSUE_LABELS
-          cmd_args=("gh" "issue" "list" "--json" "body")
-          for label in "${arr[@]}"; do
-            cmd_args+=("--label" "$label")
-          done
-          "${cmd_args[@]}" > issue_output.json
-
-          cat issue_output.json
-
-          if jq -e '. | select(type == "array" and length == 0)' issue_output.json >/dev/null
-          then
-              echo "QUIT WORKFLOW"
-          fi
+          # ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' "$OUTDATED_LIBS_JSON" | tr ' ' ';')
+          # IFS=';' read -ra arr <<< "$ISSUE_LABELS"
+          # echo "ISSUE_LABELS"
+          # echo $ISSUE_LABELS
+          # cmd_args=("gh" "issue" "list" "--json" "body")
+          # for label in "${arr[@]}"; do
+          #   cmd_args+=("--label" "$label")
+          # done
+          # "${cmd_args[@]}" > issue_output.json
+          #
+          # cat issue_output.json
+          #
+          # if jq -e '. | select(type == "array" and length == 0)' issue_output.json >/dev/null
+          # then
+          #     echo "QUIT WORKFLOW"
+          # fi
 
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
