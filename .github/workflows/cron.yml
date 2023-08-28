@@ -65,12 +65,15 @@ jobs:
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
-          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | tr ' ' ';')
+          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)')
+          ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
+          echo $ISSUE_LABELS
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "list" "--json" "body")
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
           done
+          echo $cmd_args
 
           GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
           echo "GET_ISSUE_OUTPUT_JSON=$GET_ISSUE_OUTPUT_JSON" >> "$GITHUB_ENV"
