@@ -53,15 +53,15 @@ jobs:
 
           # Generate cargo outdated command for all USED_LIBS
           # and put the JSON output of cargo outdated in a file for later use
+          USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
+          IFS=';' read -ra arr <<< "$USED_LIBS"
+          cmd_args=("cargo" "outdated" "--format" "json")
+          for lib_name in "${arr[@]}"; do
+            cmd_args+=("-p" "$lib_name")
+          done
           {
             echo 'OUTDATED_LIBS_JSON<<EOF'
-              USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
-              IFS=';' read -ra arr <<< "$USED_LIBS"
-              cmd_args=("cargo" "outdated" "--format" "json")
-              for lib_name in "${arr[@]}"; do
-                cmd_args+=("-p" "$lib_name")
-              done
-              "${cmd_args[@]}"
+             "${cmd_args[@]}"
             echo EOF
           } >> "$GITHUB_ENV"
 
