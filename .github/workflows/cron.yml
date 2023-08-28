@@ -65,9 +65,9 @@ jobs:
           # Using those labels, we check if the same issue has not already been created
           ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json  | tr ' ' ';')
           echo "KOR"
-          echo ISSUE_LABELS
+          echo $ISSUE_LABELS
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          cmd_args=("gh" "issue" "list")
+          cmd_args=("gh" "issue" "list" "--json" "body")
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
           done
