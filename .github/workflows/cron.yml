@@ -61,7 +61,7 @@ jobs:
               for lib_name in "${arr[@]}"; do
                 cmd_args+=("-p" "$lib_name")
               done
-              "${cmd_args[@]}" > outdated_output.json
+              "${cmd_args[@]}"
             echo EOF
           } >> "$GITHUB_ENV"
 
