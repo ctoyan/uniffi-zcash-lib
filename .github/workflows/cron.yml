@@ -51,16 +51,6 @@ jobs:
           # TODO: Don't use cd
           cd ./uniffi-zcash-lib/lib
 
-          # Generate cargo outdated command for all USED_LIBS
-          # and put the JSON output of cargo outdated in a file for later use
-          USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
-          IFS=';' read -ra arr <<< "$USED_LIBS"
-          cmd_args=("cargo" "outdated" "--format" "json")
-          for lib_name in "${arr[@]}"; do
-            cmd_args+=("-p" "$lib_name")
-          done
-          "${cmd_args[@]}" > output.json
-
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
           ISSUE_LABELS=$(jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json  | tr ' ' ';')
@@ -71,7 +61,23 @@ jobs:
           for label in "${arr[@]}"; do
             cmd_args+=("--label" "$label")
           done
-          "${cmd_args[@]}"
+          "${cmd_args[@]}" > issue_output.json
+
+          if jq -e '. | select(type == "array" and length > 0)' issue_output.json >/dev/null
+          then
+              echo "QUIT WORKFLOW"
+          fi
+
+
+          # Generate cargo outdated command for all USED_LIBS
+          # and put the JSON output of cargo outdated in a file for later use
+          USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
+          IFS=';' read -ra arr <<< "$USED_LIBS"
+          cmd_args=("cargo" "outdated" "--format" "json")
+          for lib_name in "${arr[@]}"; do
+            cmd_args+=("-p" "$lib_name")
+          done
+          "${cmd_args[@]}" > output.json
 
           # From each crate which begins with 'uniffi-' (assuming these are the projects we use librustzcash in)
           # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
