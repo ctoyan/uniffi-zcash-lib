@@ -41,29 +41,26 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
-      - name: Check if an issue exists
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh issue list
         # Generates env var for next step
         # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
       - name: Check for for outdated librustzcash lib versions
         env:
+          GH_TOKEN: ${{ github.token }}
           CARGO_TERM_COLOR: always
         run: |
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
 
+          # TODO: Don't use cd
           cd ./uniffi-zcash-lib/lib
-          cmd_args=("cargo" "outdated" "--format" "json")
 
-          # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
+
+          # Generate cargo outdated command for all USED_LIBS
+          # and put the JSON output of cargo outdated in a file for later use
+          cmd_args=("cargo" "outdated" "--format" "json")
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p" "$lib_name")
           done
-
-          # Put the JSON output of cargo outdated in a file for later use
           "${cmd_args[@]}" > output.json
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
@@ -156,9 +153,17 @@ jobs:
           # we'll use the issue labels to check that the same is not already created
           ISSUE_LABELS=jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' output.json
 
-          # In this workflow:
-          # get env var which contains checksum
-          # if exists - do nothing
-          # if not exists - create issue and save checksum to state
+          cmd_args=("gh" "issue" "create" "--title" "New versions of librustzcash. Please review." "--body" "Issue body")
+          # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
+          for lib_name in "${arr[@]}"; do
+            cmd_args+=("-label" "$lib_name")
+          done
+
+          # Put the JSON output of cargo outdated in a file for later use
+          "${cmd_args[@]}" > output.json
+
+
+
           # issue can just point to summary or contain the same data. To construct data - add in env var and pass to gh
           # add appropriate label and tag user
+          gh issue create --title "" --body "Issue body" --label
