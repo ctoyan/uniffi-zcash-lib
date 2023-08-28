@@ -60,7 +60,7 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
 
-          OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
+          OUTDATED_LIBS_JSON=$("${cmd_args[@]}" | jq -c)
           echo "OUTDATED_LIBS_JSON=$OUTDATED_LIBS_JSON" >> "$GITHUB_ENV"
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
