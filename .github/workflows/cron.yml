@@ -160,11 +160,7 @@ jobs:
 
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
-          # TODO: there are three versions
-          # all up to date
-          # out of date with duplicate issue
-          # out of date with no duplicate issue
-          echo "# :warning: New versions of librustzcash libraries :warning: " >> $GITHUB_STEP_SUMMARY
+          echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
 
           for lib_name in "${arr[@]}"; do
             if [ -z "$lib_name" ]; then
@@ -181,7 +177,7 @@ jobs:
           done
 
           workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-          echo "**[VIEW DIFF]($workflow_url)**" >> $GITHUB_STEP_SUMMARY
+          echo "**[VIEW PUBLIC API DIFF]($workflow_url)**" >> $GITHUB_STEP_SUMMARY
 
       - name: Create issue
         if: env.ISSUE_ALREADY_EXISTS == 'false'
