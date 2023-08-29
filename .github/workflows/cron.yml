@@ -61,15 +61,15 @@ jobs:
           OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
 
           echo "TEEEEEEEST"
-          cargo outdated -p zcash_address -p zcash_proofs -p zcash_client_backend -p zcash_primitives --format json
+          cargo outdated -p zcash_address -p zcash_proofs -p zcash_client_backend -p zcash_primitives --format json --verbose
 
           # Export issue labels in format - crate_name-current_version-latest_version
-          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
+          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-") or .=="zcash").dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
           ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
           echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
 
           # Export lib names, which versions are different
-          LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' | sort -u)
+          LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-") or .=="zcash").dependencies[] | select(.project != .latest) | .name' | sort -u)
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
