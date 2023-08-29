@@ -39,12 +39,11 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
-        # Generates env var for next step
+        # Exports env vars for next steps
         # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
         # OUTPUT_LIBS_JSON - the json output of "cargo outdated" command. Used in
       - name: Get outdated librustzcash lib versions
         env:
-          GH_TOKEN: ${{ github.token }}
           CARGO_TERM_COLOR: always
         run: |
           # TODO: Don't use cd
@@ -60,26 +59,23 @@ jobs:
           done
 
           OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
-          echo "OUTDATED_LIBS_JSON=$OUTDATED_LIBS_JSON" >> $GITHUB_ENV
+
+          # Construct issue labels in format - crate_name-current_version-latest_version
+          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
+          ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
+          echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
+
 
           LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' | sort -u)
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
 
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
-      - name: Check for for outdated librustzcash lib versions
+      - name: Cancel workflow on issue duplicate
         env:
           GH_TOKEN: ${{ github.token }}
-          CARGO_TERM_COLOR: always
         run: |
-
-          # When we create an issue we use labels in format - crate_name-current_version-latest_version
-          # Using those labels, we check if the same issue has not already been created
-          ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
-          ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
-          echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
-
-          # Search for an open issue, based on labels.
+          # Search for a duplicate issue, based on labels.
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "list" "--repo" "ctoyan/uniffi-zcash-lib" "--json" "body") # TODO: We should either remove or replace --repo
           for label in "${arr[@]}"; do
@@ -94,7 +90,7 @@ jobs:
             # TODO: Actually cancel the workflow, not exiting with an error
             # Might be able to happen with job outputs
             echo "CANCEL WORKFLOW"
-            exit 1
+            exit 0
           fi
 
       - name: Diff public API changes between outdated libs
