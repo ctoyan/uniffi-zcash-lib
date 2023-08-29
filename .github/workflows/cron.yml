@@ -61,6 +61,7 @@ jobs:
           OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
 
           echo "TEEEEEEEST"
+          cargo update
           cargo outdated -p zcash_address -p zcash_proofs -p zcash_client_backend -p zcash_primitives --format json --verbose
 
           # Export issue labels in format - crate_name-current_version-latest_version
