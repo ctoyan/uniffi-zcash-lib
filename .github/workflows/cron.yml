@@ -75,7 +75,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "LIBS WITH DIFF"
+          echo "LIBS WITH DIFF-----"
           echo $LIBS_WITH_DIFF
           if [ -z "$LIBS_WITH_DIFF" ]; then
             echo "LIBS_UP_TO_DATE=true" >> $GITHUB_ENV
