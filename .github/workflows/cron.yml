@@ -41,7 +41,8 @@ jobs:
 
         # Generates env var for next step
         # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
-      - name: Check for for outdated librustzcash lib versions
+        # OUTPUT_LIBS_JSON - the json output of "cargo outdated" command. Used in
+      - name: Get outdated librustzcash lib versions
         env:
           GH_TOKEN: ${{ github.token }}
           CARGO_TERM_COLOR: always
@@ -59,6 +60,18 @@ jobs:
           done
 
           OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
+          echo "OUTDATED_LIBS_JSON=$OUTDATED_LIBS_JSON" >> $GITHUB_ENV
+
+          LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' | sort -u)
+          LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
+
+          echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
+
+      - name: Check for for outdated librustzcash lib versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CARGO_TERM_COLOR: always
+        run: |
 
           # When we create an issue we use labels in format - crate_name-current_version-latest_version
           # Using those labels, we check if the same issue has not already been created
@@ -83,13 +96,6 @@ jobs:
             echo "CANCEL WORKFLOW"
             exit 1
           fi
-
-          # Get the library names, which have different current and latest versions (for ex. 'zcash_primitives zcash_address')
-          # Also sort and remove duplicates
-          LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | .name' | sort -u)
-          LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
-
-          echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
       - name: Diff public API changes between outdated libs
         env:
