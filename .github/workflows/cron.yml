@@ -101,7 +101,7 @@ jobs:
           fi
 
       - name: Diff public API changes between outdated libs
-        if: ${{ env.ALL_UP_TO_DATE == 'false' || env.FOUND_DUPLICATE_ISSUE == 'false' }}
+        if: env.ALL_UP_TO_DATE == 'false' || env.FOUND_DUPLICATE_ISSUE == 'false'
         env:
           CARGO_TERM_COLOR: always
         run: |
@@ -176,7 +176,7 @@ jobs:
           echo "[VIEW DIFF]($workflow_url)" >> $GITHUB_STEP_SUMMARY
 
       - name: Create issue
-        if: env.ALL_UP_TO_DATE == 'true' || env.FOUND_DUPLICATE_ISSUE != 'true'
+        if: env.ALL_UP_TO_DATE == 'false' || env.FOUND_DUPLICATE_ISSUE == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
