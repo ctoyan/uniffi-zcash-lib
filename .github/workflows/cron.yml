@@ -60,6 +60,9 @@ jobs:
 
           OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
 
+          echo "TEEEEEEEST"
+          cargo outdated -p zcash_address -p zcash_proofs -p zcash_client_backend -p zcash_primitives --format json
+
           # Export issue labels in format - crate_name-current_version-latest_version
           ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-")).dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
           ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
