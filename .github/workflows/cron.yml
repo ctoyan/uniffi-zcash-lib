@@ -61,6 +61,8 @@ jobs:
           OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
 
           echo "TEEEEEEEST"
+          cat Cargo.toml
+          cat uniffi-zcash/Cargo.toml
           cargo update
           cargo outdated -p zcash_address -p zcash_proofs -p zcash_client_backend -p zcash_primitives --format json --verbose
 
