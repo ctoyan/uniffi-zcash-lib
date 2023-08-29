@@ -23,9 +23,6 @@ jobs:
           profile: minimal
           toolchain: nightly # public-api needs nightly installed so public-api can use rustdoc JSON output
 
-      - name: Install linux tools
-        run: sudo apt-get install -y jq curl
-
         # Generates env var for next step
         # USED_LIBS - list of librustzcash library names, separated by ';', which are used in the uniffi projects (ex - 'zcash_primitives;zcash_address;')
       - name: Get librustzcash libraries used in uniffi-zcash-lib
