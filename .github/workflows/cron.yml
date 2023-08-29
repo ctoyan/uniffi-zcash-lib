@@ -168,8 +168,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # TODO: Make a link to the actual summary section
-          workflow_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          workflow_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\#summary-${{ github.job }}
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "[Check workflow summary]($workflow_url)")
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
