@@ -14,7 +14,7 @@ jobs:
           path: librustzcash
       - uses: actions/checkout@v2
         with:
-          repository: ctoyan/uniffi-zcash-lib
+          repository: ctoyan/uniffi-zcash-lib # TODO: Remove branch and switch to eigerco user
           path: uniffi-zcash-lib
           ref: pub-api-change
 
@@ -35,26 +35,26 @@ jobs:
               jq -r '.packages[] | .name' | \
               # intersect their names with the dependencies from uniffi-zcash-lib,
               # in order to get the librustzcash libraries used as dependencies in uniffi-zcash-lib
-              # also sort and remove duplicates
+              # also remove duplicates
               xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
             echo EOF
           } >> "$GITHUB_ENV"
 
-        # Exports env vars for next steps
+        # Exports the following env vars:
         # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
-        # OUTPUT_LIBS_JSON - the json output of "cargo outdated" command. Used in
-      - name: Get outdated librustzcash lib versions
+        # ISSUE_LABELS - The labels that are used when searching for or creating an issue. In format 'lib_name-current_ver-latest_ver'
+      - name: Get outdated librustzcash lib versions used in uniffi-zcash-lib
         env:
           CARGO_TERM_COLOR: always
         run: |
           # TODO: Don't use cd
-          cd ./uniffi-zcash-lib/lib
+          # cd ./uniffi-zcash-lib/lib
 
           # Generate cargo outdated command for all USED_LIBS
           # and put the JSON output of cargo outdated in a file for later use
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
-          cmd_args=("cargo" "outdated" "--format" "json")
+          cmd_args=("cargo" "outdated" "--format" "json" "--manifest-path" "uniffi-zcash-lib/lib/Cargo.toml")
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p" "$lib_name")
           done
@@ -72,13 +72,14 @@ jobs:
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
-      # TODO: Document exported vars everywhere
+      # Exports the following env vars:
+      # LIBS_UP_TO_DATE - a boolean, indicating whether librustzcash libs we use as deps are up to date
+      # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
+      # EXISTING_ISSUE_URL - the URL for the existing issue
       - name: Cancel workflow on issue duplicate
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "LIBS WITH DIFF-----"
-          echo $LIBS_WITH_DIFF
           if [ -z "$LIBS_WITH_DIFF" ]; then
             echo "LIBS_UP_TO_DATE=true" >> $GITHUB_ENV
           else
@@ -124,13 +125,14 @@ jobs:
             LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
 
             git -C ./librustzcash fetch -q --tags
-            git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION # TODO: Super sketchy. This counts on the fact that they always name their releases in this format
+            # This counts on the fact that they always name their releases in format lib_name-semver (ex zcash_address-0.1.0)
+            git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
 
             # write the diff to files, which we show in the next step for better readability
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
           done
 
-      # Step for better diff visibility
+      # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       - name: Show public API diffs
         if: env.ISSUE_ALREADY_EXISTS == 'false'
@@ -141,8 +143,11 @@ jobs:
             if [ -z "$lib_name" ]; then
               continue
             fi
-            echo "${lib_name}" # TODO: Better message
+            echo "---"
+            echo "${lib_name}"
+            echo "---"
             cat "${lib_name}.diff"
+            echo ""
           done
 
       - name: Create workflow summary
