@@ -192,6 +192,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # TODO: github.job is not the id, but the name of the job
+          # Need to check if it's possible to put the job ID, in order to generate the correct anchor
           workflow_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\#summary-${{ github.job }}
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "[Check workflow summary]($workflow_url)")
