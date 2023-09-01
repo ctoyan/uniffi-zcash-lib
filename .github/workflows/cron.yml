@@ -47,14 +47,15 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          # TODO: Don't use cd
-          # cd ./uniffi-zcash-lib/lib
+          # TODO: No idea why cargo outdated doesn't work without cd
+          # I works with manifest-path locally, but not here
+          cd ./uniffi-zcash-lib/lib
 
           # Generate cargo outdated command for all USED_LIBS
           # and put the JSON output of cargo outdated in a file for later use
           USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
           IFS=';' read -ra arr <<< "$USED_LIBS"
-          cmd_args=("cargo" "outdated" "--format" "json" "--manifest-path" "uniffi-zcash-lib/lib/Cargo.toml")
+          cmd_args=("cargo" "outdated" "--format" "json")
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p" "$lib_name")
           done
