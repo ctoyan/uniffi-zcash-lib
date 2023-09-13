@@ -125,7 +125,7 @@ jobs:
 
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
-        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING == 'true'
         env:
           CARGO_TERM_COLOR: always
         run: |
@@ -154,7 +154,7 @@ jobs:
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       - name: Show public API diffs
-        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING == 'true'
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
@@ -224,7 +224,7 @@ jobs:
 
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue
-        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
