@@ -115,7 +115,7 @@ jobs:
           CARGO_TERM_COLOR: always
         run: |
           cargo install cargo-edit
-          cargo metadata --format-version=1 --no-deps --manifest-path=../../librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo upgrade -p {} -i"
+          cargo metadata --format-version=1 --no-deps --manifest-path=./librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo upgrade -p {} -i"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
           if [[ "$?" != "0" ]]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
