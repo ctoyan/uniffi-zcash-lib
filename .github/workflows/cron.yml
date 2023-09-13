@@ -219,6 +219,9 @@ jobs:
             echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
           fi
 
+          echo "BUILD FAILING"
+          echo $BUILD_FAILING
+
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue
         if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
