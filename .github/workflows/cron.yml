@@ -106,8 +106,26 @@ jobs:
             echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
           fi
 
-      - name: Diff public API changes between outdated libs
+      # Exports the following:
+      # build_output - a file, containing the cargo build output
+      # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
+      - name: Check if uniffi-zcash build is failing
         if: env.ISSUE_ALREADY_EXISTS == 'false'
+        env:
+          CARGO_TERM_COLOR: always
+        run: |
+          cargo install cargo-edit
+          cargo metadata --format-version=1 --no-deps --manifest-path=../../librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo upgrade -p {} -i"
+          cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
+          if [[ "$?" != "0" ]]; then
+            echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          else
+            echo "BUILD_FAILING=false" >> $GITHUB_ENV
+          fi
+
+      # Run only if an issue doesnt exist and the build fails
+      - name: Diff public API changes between outdated libs
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
         env:
           CARGO_TERM_COLOR: always
         run: |
@@ -136,7 +154,7 @@ jobs:
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       - name: Show public API diffs
-        if: env.ISSUE_ALREADY_EXISTS == 'false'
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
         run: |
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
@@ -182,13 +200,28 @@ jobs:
             echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> $GITHUB_STEP_SUMMARY
             echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> $GITHUB_STEP_SUMMARY
             echo ""
+            echo "\`\`\`diff"
+            echo $(cat $lib_name.diff)
+            echo "\`\`\`"
           done
 
           workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
           echo "**[VIEW PUBLIC API DIFF]($workflow_url)**" >> $GITHUB_STEP_SUMMARY
 
+          echo "BUILD_FAILING"
+          echo $BUILD_FAILING
+          cat build_output
+          if [[ "$BUILD_FAILING" == "true" ]]; then
+            echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "$BUILD_FAILING" == "false" ]]; then
+            echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # Run only if an issue doesnt exist and the build fails
       - name: Create issue
-        if: env.ISSUE_ALREADY_EXISTS == 'false'
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING=true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
