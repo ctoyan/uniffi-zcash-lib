@@ -117,8 +117,6 @@ jobs:
       - name: Check if uniffi-zcash-lib build is failing
         if: env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false'
         continue-on-error: true
-        env:
-          CARGO_TERM_COLOR: always
         run: |
           cargo install cargo-edit
 
@@ -134,8 +132,8 @@ jobs:
           cmd_args+=("-i" "--manifest-path" "./uniffi-zcash-lib/lib/Cargo.toml")
           "${cmd_args[@]}"
 
-          echo "BUILDING"
-          cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
+          # avoid colored output, because the way ANSI color codes are written in the file, can't be renderd in markdown
+          cargo build --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
 
           if [ ${command_failed:-0} -eq 1 ]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
@@ -172,7 +170,8 @@ jobs:
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
 
             # write the diff to files, which we show in a separate step for better readability
-            cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
+            # avoid colored output, because the way ANSI color codes are written in the file, can't be renderd in markdown
+            cargo public-api --color=never --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
           done
 
       # Step only for better diff visibility and linkability
