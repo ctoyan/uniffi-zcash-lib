@@ -18,6 +18,8 @@ jobs:
           path: uniffi-zcash-lib
           ref: pub-api-change
 
+      - uses: Swatinem/rust-cache@v2
+
       - name: Install cargo
         uses: actions-rs/toolchain@v1
         with:
@@ -120,10 +122,14 @@ jobs:
 
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
+          cmd_args=("cargo" "update")
           for lib_name in "${arr[@]}"; do
-            echo "UPGRADE $lib_name"
-            cargo upgrade -p $lib_name --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i
+            cmd_args+=("-p", "$lib_name")
           done
+          cmd_args+=("-i", "--manifest-path", "./uniffi-zcash-lib/lib/Cargo.toml")
+
+          echo "UPGRADING"
+          "${cmd_args[@]}"
 
           echo "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
@@ -248,18 +254,9 @@ jobs:
           for lib_name in "${arr[@]}"; do
             cmd_args+=("--label" "$lib_name")
           done
-
-          for cmd_arg in "${cmd_args[@]}"; do
-            echo $cmd_arg
-          done
+          #
+          # for cmd_arg in "${cmd_args[@]}"; do
+          #   echo $cmd_arg
+          # done
 
           "${cmd_args[@]}"
-
-      - name: Cache Cargo tools
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin/
-          key: cargo-tools-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            cargo-tools-${{ runner.os }}-
