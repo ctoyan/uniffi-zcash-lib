@@ -121,7 +121,7 @@ jobs:
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
           echo $LIBS_WITH_DIFF
-          echo "INSTALLING"
+          echo "INSTALLINGGGG"
           cargo install cargo-edit
 
           cmd_args=("cargo" "upgrade")
