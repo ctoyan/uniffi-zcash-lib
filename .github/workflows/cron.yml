@@ -44,8 +44,9 @@ jobs:
           } >> "$GITHUB_ENV"
 
         # Exports the following env vars:
-        # LIBS_WITH_DIFF - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
+        # OUTDATED_LIBS - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
         # ISSUE_LABELS - The labels that are used when searching for or creating an issue. In format 'lib_name-current_ver-latest_ver'
+        # LIBS_UP_TO_DATE - a boolean, indicating whether librustzcash libs we use as deps are up to date
       - name: Get outdated librustzcash lib versions used in uniffi-zcash-lib
         env:
           CARGO_TERM_COLOR: always
@@ -72,26 +73,24 @@ jobs:
           echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
 
           # Export lib names, which versions are different
-          LIBS_WITH_DIFF=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-") or .=="zcash").dependencies[] | select(.project != .latest) | .name' | sort -u)
-          LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
-          echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
+          OUTDATED_LIBS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-") or .=="zcash").dependencies[] | select(.project != .latest) | .name' | sort -u)
+          OUTDATED_LIBS=$(echo $OUTDATED_LIBS | tr ' ' ';')
+          echo "OUTDATED_LIBS=$OUTDATED_LIBS" >> $GITHUB_ENV
 
-          echo "LIBS_WITH_DIFF"
-          echo $LIBS_WITH_DIFF
-
-      # Exports the following env vars:
-      # LIBS_UP_TO_DATE - a boolean, indicating whether librustzcash libs we use as deps are up to date
-      # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
-      # EXISTING_ISSUE_URL - the URL for the existing issue
-      - name: Cancel workflow on issue duplicate
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ -z "$LIBS_WITH_DIFF" ]; then
+          if [ -z "$OUTDATED_LIBS" ]; then
             echo "LIBS_UP_TO_DATE=true" >> $GITHUB_ENV
           else
             echo "LIBS_UP_TO_DATE=false" >> $GITHUB_ENV
           fi
+
+      # Exports the following env vars:
+      # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
+      # EXISTING_ISSUE_URL - the URL for the existing issue
+      - name: Cancel workflow on issue duplicate or when all libs are up to date
+        if: env.LIBS_UP_TO_DATE == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
 
           # Search for a duplicate issue, based on labels
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
@@ -112,22 +111,22 @@ jobs:
             echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
           fi
 
-          echo "LIBS_WITH_DIFF"
-          echo $LIBS_WITH_DIFF
+          echo "OUTDATED_LIBS"
+          echo $OUTDATED_LIBS
 
       # Exports the following:
       # build_output - a file, containing the cargo build output
       # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
       - name: Check if uniffi-zcash build is failing
-        if: env.ISSUE_ALREADY_EXISTS == 'false'
+        if: env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false'
         continue-on-error: true
         env:
           CARGO_TERM_COLOR: always
         run: |
-          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
-          echo "LIBS_WITH_DIFF"
-          echo $LIBS_WITH_DIFF
+          echo "OUTDATED_LIBS"
+          echo $OUTDATED_LIBS
           echo "INSTALLINGGGG"
           cargo install cargo-edit
 
@@ -162,11 +161,11 @@ jobs:
 
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
-        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING == 'true'
+        if: (env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false') && env.BUILD_FAILING == 'true'
         env:
           CARGO_TERM_COLOR: always
         run: |
-          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
           # use the cargo-public-api tool to diff the public APIs of different versions
           cargo +stable -q install cargo-public-api --locked
@@ -191,9 +190,9 @@ jobs:
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
       - name: Show public API diffs
-        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING == 'true'
+        if: (env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false') && env.BUILD_FAILING == 'true'
         run: |
-          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
           for lib_name in "${arr[@]}"; do
             if [ -z "$lib_name" ]; then
@@ -221,7 +220,7 @@ jobs:
             exit 0
           fi
 
-          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
           echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
 
@@ -261,7 +260,7 @@ jobs:
 
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue
-        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.BUILD_FAILING == 'true'
+        if: (env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false') && env.BUILD_FAILING == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
