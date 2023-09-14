@@ -122,7 +122,7 @@ jobs:
 
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
-          cmd_args=("cargo" "update")
+          cmd_args=("cargo" "upgrade")
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p", "$lib_name")
           done
