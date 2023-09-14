@@ -126,7 +126,7 @@ jobs:
           for lib_name in "${arr[@]}"; do
             cmd_args+=("-p", "$lib_name")
           done
-          cmd_args+=("-i", "--manifest-path", "./uniffi-zcash-lib/lib/Cargo.toml")
+          cmd_args+=("-i" "--manifest-path" "./uniffi-zcash-lib/lib/Cargo.toml")
 
           echo "UPGRADING"
           "${cmd_args[@]}"
