@@ -225,7 +225,8 @@ jobs:
             echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
-            echo $(cat $lib_name.diff) >> $GITHUB_STEP_SUMMARY
+            lib_diff=`cat $lib_name.diff`
+            echo "$lib_diff" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           done
 
@@ -236,7 +237,7 @@ jobs:
             echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             output=`cat build_output`
-            echo $output build_output) >> $GITHUB_STEP_SUMMARY
+            echo $output build_output >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
 
