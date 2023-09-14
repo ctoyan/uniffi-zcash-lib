@@ -144,9 +144,9 @@ jobs:
           fi
 
           # revert back to original dependency versions
-          git -C ./unifi-zcash-lib checkout .
-          cargo update
-          git -C ./unifi-zcash-lib status
+          git -C ./uniffi-zcash-lib checkout .
+          cargo --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml update
+          git -C ./uniffi-zcash-lib status
 
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
