@@ -143,6 +143,9 @@ jobs:
 
           echo "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
+          echo $?
+          echo "CAT"
+          cat build_output
 
           if [[ "$?" != "0" ]]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
