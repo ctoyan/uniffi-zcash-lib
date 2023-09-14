@@ -111,13 +111,14 @@ jobs:
       # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
       - name: Check if uniffi-zcash build is failing
         if: env.ISSUE_ALREADY_EXISTS == 'false'
+        continue-on-error: true
         env:
           CARGO_TERM_COLOR: always
         run: |
           echo "INSTALLILNG"
           cargo install cargo-edit
           echo "METADATA"
-          cargo metadata --format-version=1 --no-deps --manifest-path=./librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo upgrade -p {} --manifest-path=./librustzcash/Cargo.toml -i"
+          cargo metadata --format-version=1 --no-deps --manifest-path=./librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo upgrade -p {} --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i"
           echo "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
           if [[ "$?" != "0" ]]; then
