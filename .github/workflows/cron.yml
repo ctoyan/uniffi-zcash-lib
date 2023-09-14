@@ -115,12 +115,18 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          echo "INSTALLILNG"
+          echo "INSTALLING"
           cargo install cargo-edit
-          echo "METADATA"
-          cargo metadata --format-version=1 --no-deps --manifest-path=./librustzcash/Cargo.toml | jq -r '.packages[] | .name' | xargs -I {} sh -c "cargo upgrade -p {} --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i"
-          echo "BUILDING"
+
+          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+
+          for lib_name in "${arr[@]}"; do
+            cargo upgrade -p {} --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i
+          done
+
+          ecoh "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
+
           if [[ "$?" != "0" ]]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
           else
@@ -247,3 +253,12 @@ jobs:
           done
 
           "${cmd_args[@]}"
+
+      - name: Cache Cargo tools
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+          key: cargo-tools-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            cargo-tools-${{ runner.os }}-
