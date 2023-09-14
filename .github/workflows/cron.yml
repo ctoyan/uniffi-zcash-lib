@@ -159,13 +159,12 @@ jobs:
           #   echo "BUILD_FAILING=false" >> $GITHUB_ENV
           # fi
           echo "BUILDING"
-          cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
-          build_exit_code=$?
-          echo $?
+          cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
           echo "CAT"
           cat build_output
 
-          if [[ "$build_exit_code" != "0" ]]; then
+          if [ ${command_failed:-0} -eq 1 ]
+          then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
           else
             echo "BUILD_FAILING=false" >> $GITHUB_ENV
