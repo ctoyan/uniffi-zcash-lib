@@ -123,13 +123,9 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-
-          echo "OUTDATED_LIBS"
-          echo $OUTDATED_LIBS
-          echo "INSTALLINGGGG"
           cargo install cargo-edit
 
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           cmd_args=("cargo" "upgrade")
           for lib_name in "${arr[@]}"; do
             if [ -z "$lib_name" ]; then
@@ -139,32 +135,12 @@ jobs:
             cmd_args+=("-p" "$lib_name")
           done
           cmd_args+=("-i" "--manifest-path" "./uniffi-zcash-lib/lib/Cargo.toml")
-
-          for cmd_arg in "${cmd_args[@]}"; do
-            echo $cmd_arg
-          done
-
-          echo "UPGRADING"
           "${cmd_args[@]}"
 
-          # echo "BUILDING"
-          # cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
-          # echo $?
-          # echo "CAT"
-          # cat build_output
-          #
-          # if [[ "$?" != "0" ]]; then
-          #   echo "BUILD_FAILING=true" >> $GITHUB_ENV
-          # else
-          #   echo "BUILD_FAILING=false" >> $GITHUB_ENV
-          # fi
           echo "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
-          echo "CAT"
-          cat build_output
 
-          if [ ${command_failed:-0} -eq 1 ]
-          then
+          if [ ${command_failed:-0} -eq 1 ]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
           else
             echo "BUILD_FAILING=false" >> $GITHUB_ENV
