@@ -7,17 +7,19 @@ members = ["uniffi-bindgen", "uniffi-zcash", "uniffi-zcash-cli"]
 # will add directly the uniffi-rs libraries from crates.io.
 [workspace.dependencies]
 uniffi = { git = "https://github.com/eigerco/uniffi-rs", rev = "4cf40b9fba1769ac65ffcb16616e1eff9c12565a" }
-zcash_proofs = { version = "0.12.1" }
+zcash_proofs = { version = "0.10.0" }
 
 [profile.release]
 lto = true
 panic = 'abort'
 codegen-units = 1
-#
+
 # [patch.crates-io]
-# zcash_address = { path = "../../librustzcash/components/zcash_address", version = "0.2.0"}
-# zcash_primitives = { path = "../../librustzcash/zcash_primitives", version = "0.10.0", features = ["transparent-inputs"] }
-# zcash_client_backend = { path = "../../librustzcash/zcash_client_backend", features = [
+# zcash_address = { path = "../../real/librustzcash/components/zcash_address" }
+# zcash_primitives = { path = "../../real/librustzcash/zcash_primitives", features = [
+#     "transparent-inputs",
+# ] }
+# zcash_client_backend = { path = "../../real/librustzcash/zcash_client_backend", features = [
 #     "transparent-inputs",
 #     "unstable",
-# ]}
+# ] }
