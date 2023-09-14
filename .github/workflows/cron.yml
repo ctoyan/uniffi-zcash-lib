@@ -147,17 +147,32 @@ jobs:
           echo "UPGRADING"
           "${cmd_args[@]}"
 
+          # echo "BUILDING"
+          # cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
+          # echo $?
+          # echo "CAT"
+          # cat build_output
+          #
+          # if [[ "$?" != "0" ]]; then
+          #   echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          # else
+          #   echo "BUILD_FAILING=false" >> $GITHUB_ENV
+          # fi
           echo "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
+          build_exit_code=$?
           echo $?
           echo "CAT"
           cat build_output
 
-          if [[ "$?" != "0" ]]; then
+          if [[ "$build_exit_code" != "0" ]]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
           else
             echo "BUILD_FAILING=false" >> $GITHUB_ENV
           fi
+
+          echo "BUILD_FAILING"
+          echo $BUILD_FAILING
 
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
