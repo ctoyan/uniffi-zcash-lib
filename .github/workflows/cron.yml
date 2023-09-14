@@ -178,6 +178,7 @@ jobs:
 
             echo $lib_name
             echo $LIB_CURRENT_VERSION
+            echo $LIB_LATEST_VERSION
             # write the diff to files, which we show in a separate step for better readability
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
             echo "TEST7"
