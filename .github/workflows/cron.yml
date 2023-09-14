@@ -146,6 +146,10 @@ jobs:
             echo "BUILD_FAILING=false" >> $GITHUB_ENV
           fi
 
+          # revert back to original dependency versions
+          git checkout .
+          cargo update
+
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
         if: (env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false') && env.BUILD_FAILING == 'true'
