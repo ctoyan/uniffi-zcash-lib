@@ -124,7 +124,7 @@ jobs:
             cargo upgrade -p {} --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i
           done
 
-          ecoh "BUILDING"
+          echo "BUILDING"
           cargo build --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output
 
           if [[ "$?" != "0" ]]; then
