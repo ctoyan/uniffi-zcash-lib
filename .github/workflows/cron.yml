@@ -146,7 +146,6 @@ jobs:
           # revert back to original dependency versions
           git -C ./uniffi-zcash-lib checkout .
           cargo update --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
-          git -C ./uniffi-zcash-lib status
 
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
@@ -172,9 +171,6 @@ jobs:
             # This counts on the fact that librustzcash always name their releases in format lib_name-semver (ex zcash_address-0.1.0)
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
 
-            echo $lib_name
-            echo $LIB_CURRENT_VERSION
-            echo $LIB_LATEST_VERSION
             # write the diff to files, which we show in a separate step for better readability
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
           done
@@ -227,28 +223,25 @@ jobs:
             echo "## ${lib_name}" >> $GITHUB_STEP_SUMMARY
             echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> $GITHUB_STEP_SUMMARY
             echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> $GITHUB_STEP_SUMMARY
-            echo ""
-            echo "\`\`\`diff"
-            echo $(cat $lib_name.diff)
-            echo "\`\`\`"
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
+            echo $(cat $lib_name.diff) >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           done
 
           workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
           echo "**[VIEW PUBLIC API DIFF]($workflow_url)**" >> $GITHUB_STEP_SUMMARY
 
-          echo "BUILD_FAILING"
-          echo $BUILD_FAILING
-          cat build_output
           if [[ "$BUILD_FAILING" == "true" ]]; then
             echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo $(cat build_output) >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [[ "$BUILD_FAILING" == "false" ]]; then
             echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
           fi
-
-          echo "BUILD FAILING"
-          echo $BUILD_FAILING
 
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue
