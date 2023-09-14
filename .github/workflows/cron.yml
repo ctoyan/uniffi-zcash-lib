@@ -244,7 +244,7 @@ jobs:
 
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue
-        if: (env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false') && env.BUILD_FAILING == 'true'
+        if: env.ISSUE_ALREADY_EXISTS == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
