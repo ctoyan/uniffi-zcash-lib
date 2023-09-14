@@ -116,6 +116,7 @@ jobs:
       # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
       - name: Check if uniffi-zcash-lib build is failing
         if: env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false'
+        id: test_build
         continue-on-error: true
         run: |
           cargo install cargo-edit
@@ -134,6 +135,7 @@ jobs:
 
           # avoid colored output, because the way ANSI color codes are written in the file, can't be renderd in markdown
           cargo build --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
+          echo "test_output=$(cat build_output)" >> $GITHUB_OUTPUT
 
           if [ ${command_failed:-0} -eq 1 ]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
@@ -235,6 +237,7 @@ jobs:
             echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             echo $(cat build_output) >> $GITHUB_STEP_SUMMARY
+            echo ${{ steps.test_build.outputs.test_output }}
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
 
