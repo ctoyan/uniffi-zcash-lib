@@ -118,13 +118,17 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
+          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
+
+          echo $LIBS_WITH_DIFF
           echo "INSTALLING"
           cargo install cargo-edit
 
-          IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
-
           cmd_args=("cargo" "upgrade")
           for lib_name in "${arr[@]}"; do
+            if [ -z "$lib_name" ]; then
+              continue
+            fi
             echo $lib_name
             cmd_args+=("-p" "$lib_name")
           done
