@@ -117,7 +117,7 @@ jobs:
       # Exports the following:
       # build_output - a file, containing the cargo build output
       # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
-      - name: Check if uniffi-zcash build is failing
+      - name: Check if uniffi-zcash-lib build is failing
         if: env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false'
         continue-on-error: true
         env:
@@ -146,9 +146,6 @@ jobs:
             echo "BUILD_FAILING=false" >> $GITHUB_ENV
           fi
 
-          echo "BUILD_FAILING"
-          echo $BUILD_FAILING
-
       # Run only if an issue doesnt exist and the build fails
       - name: Diff public API changes between outdated libs
         if: (env.ISSUE_ALREADY_EXISTS == 'false' || env.LIBS_UP_TO_DATE == 'false') && env.BUILD_FAILING == 'true'
@@ -157,6 +154,7 @@ jobs:
         run: |
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
+          echo "TEST"
           # use the cargo-public-api tool to diff the public APIs of different versions
           cargo +stable -q install cargo-public-api --locked
 
@@ -164,17 +162,23 @@ jobs:
             if [ -z "$lib_name" ]; then
               continue
             fi
+            echo "TEST2"
 
             # this is faster than "cargo outdated", especially in a loop
             LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            echo "TEST3"
             LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+            echo "TEST4"
 
             git -C ./librustzcash fetch -q --tags
-            # This counts on the fact that they always name their releases in format lib_name-semver (ex zcash_address-0.1.0)
+            echo "TEST5"
+            # This counts on the fact that librustzcash always name their releases in format lib_name-semver (ex zcash_address-0.1.0)
             git -C ./librustzcash checkout -q tags/$lib_name-$LIB_LATEST_VERSION
+            echo "TEST6"
 
-            # write the diff to files, which we show in the next step for better readability
+            # write the diff to files, which we show in a separate step for better readability
             cargo public-api --color=always --manifest-path=./librustzcash/Cargo.toml -p "$lib_name" -sss diff "$LIB_CURRENT_VERSION" > "${lib_name}.diff"
+            echo "TEST7"
           done
 
       # Step only for better diff visibility and linkability
