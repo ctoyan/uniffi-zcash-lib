@@ -121,7 +121,8 @@ jobs:
           IFS=';' read -ra arr <<< "$LIBS_WITH_DIFF"
 
           for lib_name in "${arr[@]}"; do
-            cargo upgrade -p {} --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i
+            echo "UPGRADE $lib_name"
+            cargo upgrade -p $lib_name --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml -i
           done
 
           echo "BUILDING"
