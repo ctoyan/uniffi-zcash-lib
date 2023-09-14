@@ -145,7 +145,7 @@ jobs:
 
           # revert back to original dependency versions
           git -C ./uniffi-zcash-lib checkout .
-          cargo --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml update
+          cargo update --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
           git -C ./uniffi-zcash-lib status
 
       # Run only if an issue doesnt exist and the build fails
