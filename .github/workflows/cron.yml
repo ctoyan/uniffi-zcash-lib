@@ -76,6 +76,9 @@ jobs:
           LIBS_WITH_DIFF=$(echo $LIBS_WITH_DIFF | tr ' ' ';')
           echo "LIBS_WITH_DIFF=$LIBS_WITH_DIFF" >> $GITHUB_ENV
 
+          echo "LIBS_WITH_DIFF"
+          echo $LIBS_WITH_DIFF
+
       # Exports the following env vars:
       # LIBS_UP_TO_DATE - a boolean, indicating whether librustzcash libs we use as deps are up to date
       # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
@@ -108,6 +111,9 @@ jobs:
           else
             echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
           fi
+
+          echo "LIBS_WITH_DIFF"
+          echo $LIBS_WITH_DIFF
 
       # Exports the following:
       # build_output - a file, containing the cargo build output
