@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           repository: zcash/librustzcash
           path: librustzcash
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           repository: ctoyan/uniffi-zcash-lib # TODO: Remove branch and switch to eigerco user
           path: uniffi-zcash-lib
@@ -208,10 +208,11 @@ jobs:
             exit 0
           fi
 
-          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-
           echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
+          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
 
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           for lib_name in "${arr[@]}"; do
             if [ -z "$lib_name" ]; then
               continue
@@ -230,14 +231,13 @@ jobs:
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           done
 
-          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-          echo "**[VIEW PUBLIC API DIFF]($workflow_url)**" >> $GITHUB_STEP_SUMMARY
-
           if [[ "$BUILD_FAILING" == "true" ]]; then
             echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
+            workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+            echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             output=`cat build_output`
-            echo $output build_output >> $GITHUB_STEP_SUMMARY
+            echo "$output" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
 
@@ -260,7 +260,7 @@ jobs:
           for lib_name in "${arr[@]}"; do
             cmd_args+=("--label" "$lib_name")
           done
-          #
+
           # for cmd_arg in "${cmd_args[@]}"; do
           #   echo $cmd_arg
           # done
