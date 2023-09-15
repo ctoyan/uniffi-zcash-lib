@@ -293,19 +293,23 @@ jobs:
           fi
 
           issue_body_constructed=`cat issue_body`
-          echo $issue_body_constructed
 
 
 
 
 
-          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "$issue_body_constructed")
+          echo "KORRRRRR"
+          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" )
+          echo "${#cmd_args[@]}"
+          cmd_args+=("$issue_body_constructed")
+          echo "${#cmd_args[@]}"
 
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           for lib_name in "${arr[@]}"; do
             cmd_args+=("--label" "$lib_name")
           done
+          echo "${#cmd_args[@]}"
 
           # for cmd_arg in "${cmd_args[@]}"; do
           #   echo $cmd_arg
