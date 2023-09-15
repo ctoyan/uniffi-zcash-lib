@@ -14,13 +14,14 @@ jobs:
           path: librustzcash
       - uses: actions/checkout@v4
         with:
-          repository: ctoyan/uniffi-zcash-lib # TODO: Remove branch and switch to eigerco user
+          repository: ctoyan/uniffi-zcash-lib # TODO: Remove branch and switch to eigerco repo
           path: uniffi-zcash-lib
           ref: pub-api-change
 
       # caches installed cargo tools
       - uses: Swatinem/rust-cache@v2
 
+      # TODO: Remove this action and use rustup instead
       - name: Install cargo
         uses: actions-rs/toolchain@v1
         with:
@@ -236,7 +237,7 @@ jobs:
             workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
             echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            output=`cat build_output`
+            output=`cat build_output | grep -v "Compiling"`
             echo "$output" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
@@ -251,12 +252,56 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # TODO: github.job is not the id, but the name of the job
-          # Need to check if it's possible to put the job ID, in order to generate the correct anchor
-          workflow_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\#summary-${{ github.job }}
-          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "[Check workflow summary]($workflow_url)")
+          workflow_summary_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          echo "**[CHECK GITHUB ACTIONS WORKFLOW SUMMARY]($workflow_summary_url)**" >> issue_body
+
+          echo "# :warning: New versions of librustzcash libraries are present :warning: " > issue_body
+          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." > issue_body
+
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
+          for lib_name in "${arr[@]}"; do
+            if [ -z "$lib_name" ]; then
+              continue
+            fi
+
+            LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+
+            echo "## ${lib_name}" > issue_body
+            echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" > issue_body
+            echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" > issue_body
+            echo "" > issue_body
+            echo "\`\`\`diff" > issue_body
+            lib_diff=`cat $lib_name.diff`
+            echo "$lib_diff" > issue_body
+            echo "\`\`\`" > issue_body
+          done
+
+          if [[ "$BUILD_FAILING" == "true" ]]; then
+            echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " > issue_body
+            workflow_build_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+            echo "You can view the also public API diff between versions in the **[CI logs]($workflow_build_url)**." > issue_body
+            echo "\`\`\`" > issue_body
+            output=`cat build_output | grep -v "Compiling"`
+            echo "$output" > issue_body
+            echo "\`\`\`" > issue_body
+          fi
+
+          if [[ "$BUILD_FAILING" == "false" ]]; then
+            echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " > issue_body
+          fi
+
+          issue_body_constructed = `cat issue_body`
+
+
+
+
+
+          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" "$issue_body_constructed")
+
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
+          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           for lib_name in "${arr[@]}"; do
             cmd_args+=("--label" "$lib_name")
           done
