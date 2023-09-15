@@ -62,6 +62,9 @@ jobs:
           IFS=';' read -ra arr <<< "$USED_LIBS"
           cmd_args=("cargo" "outdated" "--format" "json")
           for lib_name in "${arr[@]}"; do
+            if [[ -z "$lib_name" ]]; then
+              continue
+            fi
             cmd_args+=("-p" "$lib_name")
           done
 
@@ -97,6 +100,9 @@ jobs:
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           cmd_args=("gh" "issue" "list" "--repo" "ctoyan/uniffi-zcash-lib" "--json" "body,url") # TODO: We should either remove or replace --repo
           for label in "${arr[@]}"; do
+            if [[ -z "$lib_name" ]]; then
+              continue
+            fi
             cmd_args+=("--label" "$label")
           done
 
@@ -125,10 +131,9 @@ jobs:
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           cmd_args=("cargo" "upgrade")
           for lib_name in "${arr[@]}"; do
-            if [ -z "$lib_name" ]; then
+            if [[ -z "$lib_name" ]]; then
               continue
             fi
-            echo $lib_name
             cmd_args+=("-p" "$lib_name")
           done
           cmd_args+=("-i" "--manifest-path" "./uniffi-zcash-lib/lib/Cargo.toml")
@@ -159,7 +164,7 @@ jobs:
           cargo +stable -q install cargo-public-api --locked
 
           for lib_name in "${arr[@]}"; do
-            if [ -z "$lib_name" ]; then
+            if [[ -z "$lib_name" ]]; then
               continue
             fi
 
@@ -184,7 +189,7 @@ jobs:
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
           for lib_name in "${arr[@]}"; do
-            if [ -z "$lib_name" ]; then
+            if [[ -z "$lib_name" ]]; then
               continue
             fi
             echo "---"
@@ -215,7 +220,7 @@ jobs:
 
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           for lib_name in "${arr[@]}"; do
-            if [ -z "$lib_name" ]; then
+            if [[ -z "$lib_name" ]]; then
               continue
             fi
 
@@ -259,9 +264,13 @@ jobs:
           workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
           echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> issue_body
 
+          if [[ "$BUILD_FAILING" == "false" ]]; then
+            echo "# :white_check_mark: Build doesn't fail after updating to the newer versions :white_check_mark: " >> issue_body
+          fi
+
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           for lib_name in "${arr[@]}"; do
-            if [ -z "$lib_name" ]; then
+            if [[ -z "$lib_name" ]]; then
               continue
             fi
 
@@ -275,7 +284,14 @@ jobs:
             echo "\`\`\`diff" >> issue_body
             lib_diff=`cat $lib_name.diff`
             echo "$lib_diff" >> issue_body
-            echo "\`\`\`" >> issue_body
+            # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
+            if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
+              head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
+              echo "\`\`\`" >> issue_body
+              echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
+            else
+              echo "\`\`\`" >> issue_body
+            fi
           done
 
           if [[ "$BUILD_FAILING" == "true" ]]; then
@@ -285,11 +301,14 @@ jobs:
             echo "\`\`\`" >> issue_body
             output=`cat build_output | grep -v "Compiling"`
             echo "$output" >> issue_body
-            echo "\`\`\`" >> issue_body
-          fi
-
-          if [[ "$BUILD_FAILING" == "false" ]]; then
-            echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> issue_body
+            # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
+            if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
+              head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
+              echo "\`\`\`" >> issue_body
+              echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
+            else
+              echo "\`\`\`" >> issue_body
+            fi
           fi
 
           cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body-file" "issue_body")
