@@ -135,7 +135,7 @@ jobs:
           "${cmd_args[@]}"
 
           # avoid colored output, because the way ANSI color codes are written in the file, can't be renderd in markdown
-          cargo build --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
+          cargo build --quiet --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &> build_output || command_failed=1
 
           if [ ${command_failed:-0} -eq 1 ]; then
             echo "BUILD_FAILING=true" >> $GITHUB_ENV
@@ -237,7 +237,7 @@ jobs:
             workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
             echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            output=`cat build_output | grep -v "Compiling"`
+            output=`cat build_output`
             echo "$output" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
@@ -292,17 +292,7 @@ jobs:
             echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> issue_body
           fi
 
-          issue_body_constructed=`cat issue_body`
-
-
-
-
-
-          echo "KORRRRRR"
-          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body" )
-          echo "${#cmd_args[@]}"
-          cmd_args+=("$issue_body_constructed")
-          echo "${#cmd_args[@]}"
+          cmd_args=("gh" "issue" "create" "--repo" "ctoyan/uniffi-zcash-lib" "--title" "New versions of librustzcash. Please review." "--body-file" "issue_body")
 
           # Loop through each library(out of $USED_LIBS) and add it as a -p argument value
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
