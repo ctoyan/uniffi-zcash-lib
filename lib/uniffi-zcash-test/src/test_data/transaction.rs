@@ -81,7 +81,10 @@ pub fn transparent_builder_with_nonstandard_fee_example<W: Write>(
         value: Amount::from_u64(200).unwrap(),
         script_pubkey: address.script(),
     };
-    let secret_key = key.transparent().derive_external_secret_key(0).unwrap();
+    let secret_key = key
+        .transparent()
+        .derive_external_secret_key(0, String::from("kor"))
+        .unwrap();
     builder
         .add_transparent_input(secret_key, OutPoint::new([0u8; 32], 1), prev_coin)
         .unwrap();
@@ -117,7 +120,10 @@ pub fn transparent_builder_with_standard_fee_example<W: Write>(
         value: Amount::from_u64(1200).unwrap(),
         script_pubkey: address.script(),
     };
-    let secret_key = key.transparent().derive_external_secret_key(0).unwrap();
+    let secret_key = key
+        .transparent()
+        .derive_external_secret_key(0, String::from("kor"))
+        .unwrap();
     builder
         .add_transparent_input(secret_key, OutPoint::new([0u8; 32], 1), prev_coin)
         .unwrap();
@@ -161,7 +167,10 @@ pub fn transparent_builder_with_zip317_standard_fee_example<W: Write>(
         value: Amount::from_u64(19200).unwrap(),
         script_pubkey: address.script(),
     };
-    let secret_key = key.transparent().derive_external_secret_key(0).unwrap();
+    let secret_key = key
+        .transparent()
+        .derive_external_secret_key(0, String::from("kor"))
+        .unwrap();
     builder
         .add_transparent_input(secret_key, OutPoint::new([0u8; 32], 1), prev_coin)
         .unwrap();
@@ -197,7 +206,10 @@ pub fn transparent_builder_with_zip317_non_standard_fee_example<W: Write>(
         value: Amount::from_u64(19200).unwrap(),
         script_pubkey: address.script(),
     };
-    let secret_key = key.transparent().derive_external_secret_key(0).unwrap();
+    let secret_key = key
+        .transparent()
+        .derive_external_secret_key(0, String::from("kor"))
+        .unwrap();
     builder
         .add_transparent_input(secret_key, OutPoint::new([0u8; 32], 1), prev_coin)
         .unwrap();
