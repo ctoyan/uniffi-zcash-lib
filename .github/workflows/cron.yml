@@ -7,6 +7,8 @@ jobs:
   check_for_public_api_diffs:
     runs-on: ubuntu-latest
     permissions: write-all
+    outputs:
+      USED_LIBS: ${{ steps.get_libs.outputs.USED_LIBS }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,12 +27,13 @@ jobs:
       # Exports:
       # USED_LIBS - list of librustzcash library names, separated by ';', which are used in the uniffi projects (ex - 'zcash_primitives;zcash_address;')
       - name: Get librustzcash libraries used in uniffi-zcash-lib
+        id: get_libs
         run: |
           {
             echo 'USED_LIBS<<EOF'
               ./uniffi-zcash-lib/scripts/get-libs.sh
             echo EOF
-          } >> "$GITHUB_ENV"
+          } >> "$GITHUB_OUTPUT"
 
         # Exports:
         # OUTDATED_LIBS - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
@@ -39,6 +42,7 @@ jobs:
       - name: Get outdated librustzcash lib versions used in uniffi-zcash-lib
         env:
           CARGO_TERM_COLOR: always
+          USED_LIBS: ${{needs.check_for_public_api_diffs.outputs.USED_LIBS}}
         run: |
           echo $USED_LIBS
       #     # TODO: No idea why cargo outdated doesn't work without cd
