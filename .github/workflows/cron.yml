@@ -26,7 +26,7 @@ jobs:
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           pwd
-          ls -la
+          ls -la ./uniffi-zcash-lib
           {
             echo 'USED_LIBS<<EOF'
               ./uniffi-zcash-lib/scripts/get-libs.sh
