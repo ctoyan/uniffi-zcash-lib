@@ -25,6 +25,8 @@ jobs:
       # USED_LIBS - list of librustzcash library names, separated by ';', which are used in the uniffi projects (ex - 'zcash_primitives;zcash_address;')
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
+          pwd
+          ls -la
           {
             echo 'USED_LIBS<<EOF'
               ./uniffi-zcash-lib/scripts/get-libs.sh
