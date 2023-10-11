@@ -29,11 +29,12 @@ jobs:
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         id: get_libs
         run: |
-          {
-            echo 'USED_LIBS<<EOF'
-              ./uniffi-zcash-lib/scripts/get-libs.sh
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+          echo "USED_LIBS=hello" >> $GITHUB_OUTPUT
+          # {
+          #   echo 'USED_LIBS<<EOF'
+          #     ./uniffi-zcash-lib/scripts/get-libs.sh
+          #   echo EOF
+          # } >> "$GITHUB_OUTPUT"
 
         # Exports:
         # OUTDATED_LIBS - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
