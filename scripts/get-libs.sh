@@ -14,10 +14,3 @@ get_libs() {
 
 	echo "$output"
 }
-
-main() {
-	libs=$(get_libs)
-	echo "$libs"
-}
-
-main "$@"
