@@ -17,6 +17,7 @@ jobs:
         with:
           repository: eigerco/uniffi-zcash-lib
           path: uniffi-zcash-lib
+          ref: refactor-cron # TODO: REMOVE
 
       # caches installed cargo tools
       - uses: Swatinem/rust-cache@v2
@@ -25,8 +26,6 @@ jobs:
       # USED_LIBS - list of librustzcash library names, separated by ';', which are used in the uniffi projects (ex - 'zcash_primitives;zcash_address;')
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
-          pwd
-          ls -la ./uniffi-zcash-lib
           {
             echo 'USED_LIBS<<EOF'
               ./uniffi-zcash-lib/scripts/get-libs.sh
