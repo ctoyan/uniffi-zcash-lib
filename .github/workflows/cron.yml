@@ -42,12 +42,10 @@ jobs:
           CARGO_TERM_COLOR: always
         run: |
           source ./uniffi-zcash-lib/scripts/get-outdated-libs.sh
-          source ./uniffi-zcash-lib/scripts/generate-issue-labels.sh
-
           outdated_libs_json=$(get_outdated_libs_json "$USED_LIBS" uniffi-zcash-lib/lib/Cargo.toml)
-
           outdated_libs=$(get_outdated_libs "$outdated_libs_json")
 
+          source ./uniffi-zcash-lib/scripts/issue.sh
           issue_labels=$(generate_issue_labels "$outdated_libs_json")
 
           echo "ISSUE_LABELS=$issue_labels" >> $GITHUB_ENV
@@ -67,42 +65,31 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo 123
-          echo $LIBS_UP_TO_DATE
-          echo $ISSUE_LABELS
-          echo $OUTDATED_LIBS
-          echo 123
-          # # Search for a duplicate issue, based on labels
-          # IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-          # cmd_args=("gh" "issue" "list" "--repo" "$GITHUB_REPOSITORY" "--json" "body,url")
-          # for label in "${arr[@]}"; do
-          #   if [[ -z "$label" ]]; then
-          #     continue
-          #   fi
-          #   cmd_args+=("--label" "$label")
-          # done
-          #
-          # GET_ISSUE_OUTPUT_JSON=$("${cmd_args[@]}")
-          #
+          # Search for a duplicate issue, based on labels
+          source ./uniffi-zcash-lib/scripts/issue.sh
+          issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
+
           # # When an issue with the same labels is found, stop the workflow,
           # # because we don't need to diff something we already have an issue for
-          # if [[ "$GET_ISSUE_OUTPUT_JSON" != "[]" ]]; then
-          #   EXISTING_ISSUE_URL=$(echo $GET_ISSUE_OUTPUT_JSON | jq -r '.[] | .url')
-          #   echo "EXISTING_ISSUE_URL=$EXISTING_ISSUE_URL" >> $GITHUB_ENV
-          #   echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
-          # else
-          #   echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
-          # fi
+          if [[ "$issue_json" != "[]" ]]; then
+            echo "EXISTING_ISSUE_URL=$(issue_url_from_json $issue_json)" >> $GITHUB_ENV
+            echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
+          fi
 
-      # # Exports:
-      # # build_output - a file, containing the cargo build output
-      # # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
-      # - name: Check if uniffi-zcash-lib build is failing
-      #   if: env.ISSUE_ALREADY_EXISTS == 'false' && env.LIBS_UP_TO_DATE == 'false'
-      #   id: test_build
-      #   continue-on-error: true
-      #   run: |
-      #     cargo install cargo-edit
+      # Exports:
+      # build_output - a file, containing the cargo build output
+      # BUILD_FAILING - an env var, containing a boolean, which indicates if a build failed
+      - name: Check if uniffi-zcash-lib build is failing
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.LIBS_UP_TO_DATE == 'false'
+        id: test_build
+        continue-on-error: true
+        run: |
+          echo 123
+          echo $EXISTING_ISSUE_URL
+          echo $ISSUE_ALREADY_EXISTS
+          echo 123
       #
       #     IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
       #     cmd_args=("cargo" "upgrade")

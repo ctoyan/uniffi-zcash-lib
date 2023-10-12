@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # be stricter
-set -eo pipefail
+set -eou pipefail
 
 # Use jq to get the outdated libs from the "cargo outdated" JSON string
 #

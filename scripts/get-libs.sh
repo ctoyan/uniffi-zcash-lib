@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # be stricter
-set -eo pipefail
+set -eou pipefail
 
 # Get librustzcash libraries used in uniffi-zcash-lib
 #
