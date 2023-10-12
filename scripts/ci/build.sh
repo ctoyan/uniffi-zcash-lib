@@ -32,12 +32,13 @@ upgrade_and_build() {
 
 	# avoid colored output, because the way ANSI color codes are written in the file, can't be renderd in markdown
 	cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
-	echo 12345
 
 	local does_build_fail
-	if [ "${command_failed:-0}" -eq 1 ]; then
+	if [ ${command_failed:-0} -eq 1 ]; then
+		echo 12345
 		does_build_fail="true"
 	else
+		echo 1234534612312312
 		does_build_fail="false"
 	fi
 

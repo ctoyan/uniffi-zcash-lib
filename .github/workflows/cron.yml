@@ -64,8 +64,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          echo "ASDF"
           source ./uniffi-zcash-lib/scripts/ci/issue.sh
+          echo "KOR"
           issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
+          echo "KOR4e"
 
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
