@@ -45,7 +45,7 @@ jobs:
           source ./uniffi-zcash-lib/scripts/generate-issue-labels.sh
 
           local outdated_libs_json
-          outdated_libs_json=$(get_outdated_libs_json "$@")
+          outdated_libs_json=$(get_outdated_libs_json $USED_LIBS)
 
           local outdated_libs
           outdated_libs=$(get_outdated_libs "$outdated_libs_json")
