@@ -24,6 +24,7 @@ generate_issue_labels() {
 	echo "$output"
 }
 
+# TODO: Remove main
 main() {
 	libs=$(generate_issue_labels "$@")
 	echo "$libs"

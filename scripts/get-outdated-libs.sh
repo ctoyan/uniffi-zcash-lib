@@ -51,6 +51,7 @@ get_outdated_libs_json() {
 	echo "$outdated_libs_json"
 }
 
+# TODO: Remove main
 main() {
 	local libs_json
 	libs_json=$(get_outdated_libs_json "$@")
