@@ -69,14 +69,14 @@ jobs:
           source ./uniffi-zcash-lib/scripts/issue.sh
           issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
 
-          # # When an issue with the same labels is found, stop the workflow,
-          # # because we don't need to diff something we already have an issue for
-          if [[ "$issue_json" != "[]" ]]; then
-            echo "EXISTING_ISSUE_URL=$(issue_url_from_json $issue_json)" >> $GITHUB_ENV
-            echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
-          fi
+          # When an issue with the same labels is found, stop the workflow,
+          # because we don't need to diff something we already have an issue for
+          # if [[ "$issue_json" != "[]" ]]; then
+          #   echo "EXISTING_ISSUE_URL=$(issue_url_from_json $issue_json)" >> $GITHUB_ENV
+          #   echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
+          # else
+          #   echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
+          # fi
 
       # Exports:
       # build_output - a file, containing the cargo build output
