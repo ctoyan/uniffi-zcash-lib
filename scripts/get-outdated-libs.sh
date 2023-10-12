@@ -52,12 +52,12 @@ get_outdated_libs_json() {
 }
 
 # TODO: Remove main
-main() {
-	local libs_json
-	libs_json=$(get_outdated_libs_json "$@")
-	# echo $libs_json #WHEN I UNCOMMENT THIS IT SORT OF WORKS WTF
-
-	get_outdated_libs "$libs_json"
-}
-
-main "$@"
+# main() {
+# 	local libs_json
+# 	libs_json=$(get_outdated_libs_json "$@")
+# 	# echo $libs_json #WHEN I UNCOMMENT THIS IT SORT OF WORKS WTF
+#
+# 	get_outdated_libs "$libs_json"
+# }
+#
+# main "$@"
