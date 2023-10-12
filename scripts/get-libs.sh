@@ -31,9 +31,9 @@ get_libs() {
 }
 
 # TODO: Remove main
-main() {
-	libs=$(get_libs "$@")
-	echo "$libs"
-}
-
-main "$@"
+# main() {
+# 	libs=$(get_libs "$@")
+# 	echo "$libs"
+# }
+#
+# main "$@"
