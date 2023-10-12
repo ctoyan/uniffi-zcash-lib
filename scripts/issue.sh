@@ -32,16 +32,15 @@ generate_issue_labels() {
 # Returns:
 # - The issue URL
 issue_url_from_json() {
-	local issue_json=$1
+	local issue_json="$1"
 
 	if [[ -z "$issue_json" ]]; then
 		echo "required parameter for issue_url_from_json() is empty" 1>&2
 		exit 1
 	fi
 
-	echo "$issue_json" >issue.json
 	local issue_url
-	issue_url=$(cat issue.json | jq -r '.[] | .url')
+	issue_url=$(echo "$issue_json" | jq -r '.[] | .url')
 
 	echo "$issue_url"
 }
