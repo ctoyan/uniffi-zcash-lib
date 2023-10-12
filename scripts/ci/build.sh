@@ -26,21 +26,28 @@ upgrade_and_build() {
 		cmd_args+=("-p" "$lib_name")
 	done
 	cmd_args+=("-i" "--manifest-path" "./uniffi-zcash-lib/lib/Cargo.toml")
+	echo 123
 	"${cmd_args[@]}"
+	echo 1234
 
 	# avoid colored output, because the way ANSI color codes are written in the file, can't be renderd in markdown
 	cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
+	echo 12345
 
 	local does_build_fail
 	if [ "${command_failed:-0}" -eq 1 ]; then
 		does_build_fail="true"
 	else
-		does_build_fail="true"
+		does_build_fail="false"
 	fi
 
+	echo $does_build_fail
+	echo 123456
 	# revert back to original dependency versions
 	git -C ./uniffi-zcash-lib checkout .
+	echo 1234567
 	cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
+	echo 12345678
 
 	echo "$does_build_fail"
 }
