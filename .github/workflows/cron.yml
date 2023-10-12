@@ -29,8 +29,9 @@ jobs:
           {
             echo 'USED_LIBS<<EOF'
               source ./uniffi-zcash-lib/scripts/get-libs.sh
-              get_libs_result=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
-              echo $get_libs_result
+              # get_libs_result=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
+              get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml
+              # echo $get_libs_result
             echo EOF
           } >> "$GITHUB_ENV"
 
