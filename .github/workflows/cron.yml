@@ -60,7 +60,7 @@ jobs:
       # Exports:
       # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
       # EXISTING_ISSUE_URL - the URL for the existing issue
-      - name: Cancel workflow on issue duplicate or when all libs are up to date
+      - name: Check for issue duplicated, based on labels
         if: env.LIBS_UP_TO_DATE == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,12 +71,13 @@ jobs:
 
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
-          # if [[ "$issue_json" != "[]" ]]; then
-          #   echo "EXISTING_ISSUE_URL=$(issue_url_from_json $issue_json)" >> $GITHUB_ENV
-          #   echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
-          # else
-          #   echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
-          # fi
+          if [[ "$issue_json" != "[]" ]]; then
+            issue_url=$(issue_url_from_json $issue_json)
+            echo "EXISTING_ISSUE_URL=$issue_url" >> $GITHUB_ENV
+            echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "ISSUE_ALREADY_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       # Exports:
       # build_output - a file, containing the cargo build output
