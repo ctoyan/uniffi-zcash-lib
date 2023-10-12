@@ -77,9 +77,9 @@ get_issue_by_labels() {
 }
 
 # TODO: Remove main
-main() {
-	libs=$(issue_url_from_json "$@")
-	echo "$libs"
-}
-
-main "$@"
+# main() {
+# 	libs=$(issue_url_from_json "$@")
+# 	echo "$libs"
+# }
+#
+# main "$@"
