@@ -32,7 +32,7 @@ generate_issue_labels() {
 # Returns:
 # - The issue URL
 issue_url_from_json() {
-	local issue_json="$1"
+	local issue_json=$1
 
 	if [[ -z "$issue_json" ]]; then
 		echo "required parameter for issue_url_from_json() is empty" 1>&2

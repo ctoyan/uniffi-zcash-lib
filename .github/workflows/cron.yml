@@ -65,14 +65,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          jq --version
           source ./uniffi-zcash-lib/scripts/issue.sh
           issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
 
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
           if [[ "$issue_json" != "[]" ]]; then
-            issue_url=$(issue_url_from_json $issue_json)
+            issue_url=$(issue_url_from_json "$issue_json")
             echo "EXISTING_ISSUE_URL=$issue_url" >> $GITHUB_ENV
             echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
           else
