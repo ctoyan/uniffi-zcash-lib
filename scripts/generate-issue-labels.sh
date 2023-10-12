@@ -25,9 +25,9 @@ generate_issue_labels() {
 }
 
 # TODO: Remove main
-main() {
-	libs=$(generate_issue_labels "$@")
-	echo "$libs"
-}
-
-main "$@"
+# main() {
+# 	libs=$(generate_issue_labels "$@")
+# 	echo "$libs"
+# }
+#
+# main "$@"
