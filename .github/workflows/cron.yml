@@ -72,6 +72,8 @@ jobs:
           # because we don't need to diff something we already have an issue for
           if [[ "$issue_json" != "[]" ]]; then
             issue_url=$(issue_url_from_json "$issue_json")
+            echo 1234
+            echo $issue_url
             echo "EXISTING_ISSUE_URL=$issue_url" >> $GITHUB_ENV
             echo "ISSUE_ALREADY_EXISTS=true" >> $GITHUB_ENV
           else
