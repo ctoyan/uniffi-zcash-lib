@@ -53,23 +53,11 @@ jobs:
           echo "ISSUE_LABELS=$issue_labels" >> $GITHUB_ENV
           echo "OUTDATED_LIBS=$outdated_libs" >> $GITHUB_ENV
 
-          if [ -z "$OUTDATED_LIBS" ]; then
+          if [ -z "$outdated_libs" ]; then
             echo "LIBS_UP_TO_DATE=true" >> $GITHUB_ENV
           else
             echo "LIBS_UP_TO_DATE=false" >> $GITHUB_ENV
           fi
-
-          echo 123
-          echo $outdated_libs_json
-          echo $outdated_libs
-          echo $issue_labels
-          echo 123
-
-          echo 123
-          echo $LIBS_UP_TO_DATE
-          echo $ISSUE_LABELS
-          echo $OUTDATED_LIBS
-          echo 123
 
       # Exports:
       # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
