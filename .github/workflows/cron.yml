@@ -27,7 +27,7 @@ jobs:
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           source ./uniffi-zcash-lib/scripts/get-libs.sh
-          local get_libs_result=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
+          get_libs_result=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
 
           {
             echo 'USED_LIBS<<EOF'
@@ -46,13 +46,10 @@ jobs:
           source ./uniffi-zcash-lib/scripts/get-outdated-libs.sh
           source ./uniffi-zcash-lib/scripts/generate-issue-labels.sh
 
-          local outdated_libs_json
           outdated_libs_json=$(get_outdated_libs_json $USED_LIBS)
 
-          local outdated_libs
           outdated_libs=$(get_outdated_libs "$outdated_libs_json")
 
-          local issue_labels
           issue_labels=$(generate_issue_labels "$outdated_libs_json")
 
           echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
