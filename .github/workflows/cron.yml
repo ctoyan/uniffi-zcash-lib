@@ -50,7 +50,7 @@ jobs:
 
           issue_labels=$(generate_issue_labels "$outdated_libs_json")
 
-          echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
+          echo "ISSUE_LABELS=$issue_labels" >> $GITHUB_ENV
           echo "OUTDATED_LIBS=$outdated_libs" >> $GITHUB_ENV
 
           if [ -z "$OUTDATED_LIBS" ]; then
@@ -58,6 +58,12 @@ jobs:
           else
             echo "LIBS_UP_TO_DATE=false" >> $GITHUB_ENV
           fi
+
+          echo 123
+          echo $outdated_libs_json
+          echo $outdated_libs
+          echo $issue_labels
+          echo 123
 
           echo 123
           echo $LIBS_UP_TO_DATE
