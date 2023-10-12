@@ -29,11 +29,20 @@ jobs:
           source ./uniffi-zcash-lib/scripts/get-libs.sh
           get_libs_result=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
 
+            # echo 'USED_LIBS<<EOF'
+            #   echo $get_libs_result
+            # echo EOF >> "$GITHUB_ENV"
+
           {
             echo 'USED_LIBS<<EOF'
-              echo $get_libs_result
+            echo $get_libs_result
             echo EOF
           } >> "$GITHUB_ENV"
+
+          # echo "USED_LIBS<<EOF" >> $GITHUB_ENV
+          #   echo $get_libs_result
+          # echo $USED_LIBS >> $GITHUB_ENV
+          # echo "EOF" >> $GITHUB_ENV
 
         # Exports:
         # OUTDATED_LIBS - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
