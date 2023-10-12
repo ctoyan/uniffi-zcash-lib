@@ -32,15 +32,17 @@ generate_issue_labels() {
 # Returns:
 # - The issue URL
 issue_url_from_json() {
-	local issue_json
-	issue_json=$1
+	local issue_json=$1
 
 	if [[ -z "$issue_json" ]]; then
 		echo "required parameter for issue_url_from_json() is empty" 1>&2
 		exit 1
 	fi
 
-	echo "$issue_json" | jq -r '.[] | .url'
+	local issue_url
+	issue_url=$("$issue_json" | jq -r '.[] | .url')
+
+	echo "$issue_url"
 }
 
 # Search for an issue from it's labels
@@ -51,8 +53,7 @@ issue_url_from_json() {
 # Returns:
 # - The response of the "gh issue" command in JSON format
 get_issue_by_labels() {
-	local issue_labels
-	issue_labels=$1
+	local issue_labels=$1
 
 	if [[ -z "$issue_labels" ]]; then
 		echo "required parameter for get_issue_by_labels() is empty" 1>&2
