@@ -88,18 +88,19 @@ jobs:
           cargo install cargo-edit
 
           source ./uniffi-zcash-lib/scripts/ci/build.sh
-          does_build_fail=$(upgrade_and_build "$ISSUE_LABELS")
+          does_build_fail=$(upgrade_and_build "$OUTDATED_LIBS")
 
           echo "BUILD_FAILING=$does_build_fail" >> $GITHUB_ENV
-      #
-      # # Exports:
-      # # ${lib_name}_colored.diff file for every outdated library - for output in the github workflow console
-      # # ${lib_name}.diff file for every outdated library - for output in the issue
-      # - name: Diff public API changes between outdated libs
-      #   if: env.ISSUE_ALREADY_EXISTS == 'false' && env.LIBS_UP_TO_DATE == 'false' && env.BUILD_FAILING == 'true'
-      #   env:
-      #     CARGO_TERM_COLOR: always
-      #   run: |
+
+      # Exports:
+      # ${lib_name}_colored.diff file for every outdated library - for output in the github workflow console
+      # ${lib_name}.diff file for every outdated library - for output in the issue
+      - name: Diff public API changes between outdated libs
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.LIBS_UP_TO_DATE == 'false' && env.BUILD_FAILING == 'true'
+        env:
+          CARGO_TERM_COLOR: always
+        run: |
+          echo $BUILD_FAILING
       #     IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
       #
       #     # we use this program for grepping code contextually, from within the rust tool
