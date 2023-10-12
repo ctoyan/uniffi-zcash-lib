@@ -59,6 +59,12 @@ jobs:
             echo "LIBS_UP_TO_DATE=false" >> $GITHUB_ENV
           fi
 
+          echo 123
+          echo $LIBS_UP_TO_DATE
+          echo $ISSUE_LABELS
+          echo $OUTDATED_LIBS
+          echo 123
+
       # Exports:
       # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
       # EXISTING_ISSUE_URL - the URL for the existing issue
