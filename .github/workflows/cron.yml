@@ -29,7 +29,7 @@ jobs:
           source ./uniffi-zcash-lib/scripts/get-libs.sh
           {
             echo 'USED_LIBS<<EOF'
-              get_libs
+              get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml
             echo EOF
           } >> "$GITHUB_ENV"
 
