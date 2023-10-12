@@ -46,6 +46,7 @@ jobs:
           outdated_libs=$(get_outdated_libs "$outdated_libs_json")
           echo "OUTDATED_LIBS=$outdated_libs" >> $GITHUB_ENV
 
+          source ./uniffi-zcash-lib/scripts/ci/issue.sh
           issue_labels=$(generate_issue_labels "$outdated_libs_json")
           echo "ISSUE_LABELS=$issue_labels" >> $GITHUB_ENV
 
@@ -86,7 +87,7 @@ jobs:
         run: |
           cargo install cargo-edit
 
-          source ./uniffi-zcash-lib/scripts/ci/issue.sh
+          source ./uniffi-zcash-lib/scripts/ci/build.sh
           does_build_fail=$(upgrade_and_build "$ISSUE_LABELS")
 
           echo "BUILD_FAILING=$does_build_fail" >> $GITHUB_ENV
