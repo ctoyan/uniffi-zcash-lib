@@ -22,9 +22,9 @@ get_libs() {
 
 	local output
 	output=$(
-		cargo metadata --format-version=1 --no-deps --manifest-path="$librustzcash_cargo_path" |
+		cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
 			jq -r '.packages[] | .name' |
-			xargs -I {} sh -c "cargo metadata --format-version=1 --no-deps --manifest-path=$uniffi_cargo_path | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
+			xargs -I {} sh -c "cargo metadata --quiet --format-version=1 --no-deps --manifest-path=$uniffi_cargo_path | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u"
 	)
 
 	echo "$output"
