@@ -41,40 +41,27 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          echo $USED_LIBS
-      #     # I works with manifest-path locally, but not here
-      #     cd ./uniffi-zcash-lib/lib
-      #
-      #     # Generate cargo outdated command for all USED_LIBS
-      #     # and put the JSON output of cargo outdated in a file for later use
-      #     USED_LIBS=$(echo $USED_LIBS | tr ' ' ';')
-      #     IFS=';' read -ra arr <<< "$USED_LIBS"
-      #     cmd_args=("cargo" "outdated" "--format" "json")
-      #     for lib_name in "${arr[@]}"; do
-      #       if [[ -z "$lib_name" ]]; then
-      #         continue
-      #       fi
-      #       cmd_args+=("-p" "$lib_name")
-      #     done
-      #
-      #     OUTDATED_LIBS_JSON=$("${cmd_args[@]}")
-      #
-      #     # Export ISSUE_LABELS in format - "crate_name-current_version-latest_version;..."
-      #     ISSUE_LABELS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-") or .=="zcash").dependencies[] | select(.project != .latest) | (.name+"-"+.project+"-"+.latest)' | sort -u)
-      #     ISSUE_LABELS=$(echo $ISSUE_LABELS | tr ' ' ';')
-      #     echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
-      #
-      #     # Export OUTDATED_LIBS, where a uniffi librustzcash dependency version is not latest, in format - "crate_name;..."
-      #     OUTDATED_LIBS=$(echo $OUTDATED_LIBS_JSON | jq -r 'select(.crate_name | startswith("uniffi-") or .=="zcash").dependencies[] | select(.project != .latest) | .name' | sort -u)
-      #     OUTDATED_LIBS=$(echo $OUTDATED_LIBS | tr ' ' ';')
-      #     echo "OUTDATED_LIBS=$OUTDATED_LIBS" >> $GITHUB_ENV
-      #
-      #     if [ -z "$OUTDATED_LIBS" ]; then
-      #       echo "LIBS_UP_TO_DATE=true" >> $GITHUB_ENV
-      #     else
-      #       echo "LIBS_UP_TO_DATE=false" >> $GITHUB_ENV
-      #     fi
-      #
+          source ./uniffi-zcash-lib/scripts/get-outdated-libs.sh
+          source ./uniffi-zcash-lib/scripts/generate-issue-labels.sh
+
+          local outdated_libs_json
+          outdated_libs_json=$(get_outdated_libs_json "$@")
+
+          local outdated_libs
+          outdated_libs=$(get_outdated_libs "$outdated_libs_json")
+
+          local issue_labels
+          issue_labels=$(generate_issue_labels "$outdated_libs_json")
+
+          echo "ISSUE_LABELS=$ISSUE_LABELS" >> $GITHUB_ENV
+          echo "OUTDATED_LIBS=$outdated_libs" >> $GITHUB_ENV
+
+          if [ -z "$OUTDATED_LIBS" ]; then
+            echo "LIBS_UP_TO_DATE=true" >> $GITHUB_ENV
+          else
+            echo "LIBS_UP_TO_DATE=false" >> $GITHUB_ENV
+          fi
+
       # # Exports:
       # # ISSUE_ALREADY_EXISTS - a boolean indicating if an issue for these version diffs already exists
       # # EXISTING_ISSUE_URL - the URL for the existing issue
