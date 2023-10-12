@@ -39,8 +39,9 @@ issue_url_from_json() {
 		exit 1
 	fi
 
+	echo "$issue_json" >issue.json
 	local issue_url
-	issue_url=$(echo "$issue_json" | jq -r '.[] | .url')
+	issue_url=$(cat issue.json | jq -r '.[] | .url')
 
 	echo "$issue_url"
 }
@@ -76,9 +77,9 @@ get_issue_by_labels() {
 }
 
 # TODO: Remove main
-# main() {
-# 	libs=$(generate_issue_labels "$@")
-# 	echo "$libs"
-# }
-#
-# main "$@"
+main() {
+	libs=$(issue_url_from_json "$@")
+	echo "$libs"
+}
+
+main "$@"

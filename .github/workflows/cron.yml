@@ -67,8 +67,6 @@ jobs:
         run: |
           source ./uniffi-zcash-lib/scripts/issue.sh
           issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
-          echo 1234
-          echo $issue_json
 
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
