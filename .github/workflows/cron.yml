@@ -46,7 +46,7 @@ jobs:
           echo 123
           echo $USED_LIBS
 
-          outdated_libs_json=$(get_outdated_libs_json $USED_LIBS)
+          outdated_libs_json=$(get_outdated_libs_json "$USED_LIBS" uniffi-zcash-lib/lib/Cargo.toml)
 
           outdated_libs=$(get_outdated_libs "$outdated_libs_json")
 
