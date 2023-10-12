@@ -40,7 +40,7 @@ issue_url_from_json() {
 	fi
 
 	local issue_url
-	issue_url=$("$issue_json" | jq -r '.[] | .url')
+	issue_url=$(echo "$issue_json" | jq -r '.[] | .url')
 
 	echo "$issue_url"
 }
