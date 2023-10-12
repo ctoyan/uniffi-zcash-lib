@@ -65,7 +65,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Search for a duplicate issue, based on labels
           source ./uniffi-zcash-lib/scripts/issue.sh
           issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
 
