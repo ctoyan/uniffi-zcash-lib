@@ -115,12 +115,9 @@ jobs:
           # we use this program for grepping code contextually, from within the rust tool
           cargo install ast-grep
 
-          echo "KORi"
           grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
           source ./uniffi-zcash-lib/scripts/ci/diff.sh
-          echo "KOR1"
-          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path'
-          echo "KOR"
+          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path"
 
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
