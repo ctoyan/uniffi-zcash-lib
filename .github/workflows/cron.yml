@@ -64,11 +64,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "ASDF"
           source ./uniffi-zcash-lib/scripts/ci/issue.sh
-          echo "KOR"
           issue_json=$(get_issue_by_labels "$ISSUE_LABELS")
-          echo "KOR4e"
 
           # When an issue with the same labels is found, stop the workflow,
           # because we don't need to diff something we already have an issue for
@@ -88,10 +85,14 @@ jobs:
         id: test_build
         continue-on-error: true
         run: |
+          echo "ASDF"
           cargo install cargo-edit
+          echo "KOR"
 
           source ./uniffi-zcash-lib/scripts/ci/build.sh
+          echo "KOR4e"
           does_build_fail=$(upgrade_and_build "$OUTDATED_LIBS")
+          echo "KOR4eeeeEe"
 
           echo "BUILD_FAILING=$does_build_fail" >> $GITHUB_ENV
 
