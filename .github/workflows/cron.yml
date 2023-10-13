@@ -147,20 +147,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [[ "$LIBS_UP_TO_DATE" == "true" ]]; then
-            echo "# :white_check_mark: All libraries from librustzcash are up to date :white_check_mark: " >> $GITHUB_STEP_SUMMARY
-            exit 0
-          fi
+          source ./uniffi-zcash-lib/scripts/ci/workflow.sh
+          kor=$(print_workflow_header $LIBS_UP_TO_DATE $ISSUE_ALREADY_EXISTS $EXISTING_ISSUE_URL $GITHUB_REPOSITORY $GITHUB_RUN_ID)
+          echo $kor >> $GITHUB_STEP_SUMMARY
 
-          if [[ "$ISSUE_ALREADY_EXISTS" == "true" ]]; then
-            echo "# :page_with_curl: An issue already exists for those library versions :page_with_curl: " >> $GITHUB_STEP_SUMMARY
-            echo "**[VIEW EXISTING ISSUE]($EXISTING_ISSUE_URL)**" >> $GITHUB_STEP_SUMMARY
-            exit 0
-          fi
-
-          echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
-          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-          echo "You can also view the public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
+          # if [[ "$LIBS_UP_TO_DATE" == "true" ]]; then
+          #   echo "# :white_check_mark: All libraries from librustzcash are up to date :white_check_mark: " >> $GITHUB_STEP_SUMMARY
+          #   exit 0
+          # fi
+          #
+          # if [[ "$ISSUE_ALREADY_EXISTS" == "true" ]]; then
+          #   echo "# :page_with_curl: An issue already exists for those library versions :page_with_curl: " >> $GITHUB_STEP_SUMMARY
+          #   echo "**[VIEW EXISTING ISSUE]($EXISTING_ISSUE_URL)**" >> $GITHUB_STEP_SUMMARY
+          #   exit 0
+          # fi
+          #
+          # echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
+          # workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          # echo "You can view a better colored result of the diff in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
 
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           for lib_name in "${arr[@]}"; do
@@ -184,7 +188,7 @@ jobs:
           if [[ "$BUILD_FAILING" == "true" ]]; then
             echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
             workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-            echo "You can also view the public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
+            echo "You can also view the build result in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             output=`cat build_output`
             echo "$output" >> $GITHUB_STEP_SUMMARY
