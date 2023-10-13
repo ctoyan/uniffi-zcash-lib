@@ -91,8 +91,26 @@ jobs:
 
           source ./uniffi-zcash-lib/scripts/ci/build.sh
           echo "KOR4e"
-          does_build_fail=$(upgrade_and_build "$OUTDATED_LIBS")
+          upgrade "$OUTDATED_LIBS"
           echo "KOR4eeeeEe"
+
+          cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
+
+          if [ ${command_failed:-0} -eq 1 ]; then
+              echo 12345
+              does_build_fail="true"
+          else
+              echo 1234534612312312
+              does_build_fail="false"
+          fi
+
+          echo $does_build_fail
+          echo 123456
+          # revert back to original dependency versions
+          git -C ./uniffi-zcash-lib checkout .
+          echo 1234567
+          cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
+          echo 12345678
 
           echo "BUILD_FAILING=$does_build_fail" >> $GITHUB_ENV
 
