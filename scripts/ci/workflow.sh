@@ -11,26 +11,28 @@ set -eou pipefail
 #
 # Returns:
 # - The labels that are used when searching for or creating a Github issue, in format 'lib_name-current_ver-latest_ver'
-print_workflow_header() {
-	local libs_up_to_date=$1
-	local issue_already_exists=$2
-	local existing_issue_url=$3
-	local github_repo=$4
-	local github_run_id=$5
-
-	if [[ "$libs_up_to_date" == "true" ]]; then
-		echo "# :white_check_mark: All libraries from librustzcash are up to date :white_check_mark: "
-		exit 0
-	fi
-
-	if [[ "$issue_already_exists" == "true" ]]; then
-		echo "# :page_with_curl: An issue already exists for those library versions :page_with_curl: "
-		echo "**[VIEW EXISTING ISSUE]($existing_issue_url)**"
-		exit 0
-	fi
+print_workflow_diff() {
+	local outdated_libs=$1
+	local diff_result_workflow_url=$2
 
 	echo "# :warning: New versions of librustzcash libraries are present :warning: "
-	local workflow_url
-	workflow_url=$(gh run --repo "$github_repo" view "$github_run_id" --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-	echo "You can view a better colored result of the diff in the **[CI logs]($workflow_url)**."
+	echo "You can view a better colored result of the diff in the **[CI logs]($diff_result_workflow_url)**."
+
+	IFS=';' read -ra arr <<<"$outdated_libs"
+	for lib_name in "${arr[@]}"; do
+		if [[ -z "$lib_name" ]]; then
+			continue
+		fi
+
+		LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+		LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+
+		echo "## ${lib_name}"
+		echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}"
+		echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}"
+		echo ""
+		echo "\`\`\`diff"
+		cat "$lib_name".diff
+		echo "\`\`\`"
+	done
 }
