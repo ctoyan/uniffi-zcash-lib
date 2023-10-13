@@ -10,7 +10,7 @@ set -eou pipefail
 #
 # Returns:
 # - an env var indicating if the build failed or succeeded. Contains a string "true" or "false"
-upgrade_and_build() {
+upgrade() {
 	local outdated_libs=$1
 	if [[ -z "$outdated_libs" ]]; then
 		echo "required parameter for upgrade_and_build() is empty" 1>&2
