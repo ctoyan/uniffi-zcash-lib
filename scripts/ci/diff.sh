@@ -59,5 +59,4 @@ diff() {
 			--lib-new-version "$lib_latest_version" \
 			--color never >"${lib_name}.diff"
 	done
-
 }

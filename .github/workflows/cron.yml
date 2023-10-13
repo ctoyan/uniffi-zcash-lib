@@ -19,6 +19,12 @@ jobs:
           path: uniffi-zcash-lib
           ref: refactor-cron # TODO: REMOVE
 
+      - name: Install cargo
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly # public-api needs nightly installed so public-api can use rustdoc JSON output
+
       # caches installed cargo tools
       - uses: Swatinem/rust-cache@v2
 
