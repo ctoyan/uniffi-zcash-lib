@@ -112,7 +112,7 @@ jobs:
           # we use this program for grepping code contextually, from within the rust tool
           cargo install ast-grep
 
-          local grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
+          grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
           source ./uniffi-zcash-lib/scripts/ci/diff.sh
           diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path'
 
@@ -134,133 +134,131 @@ jobs:
             echo ""
           done
 
-      # - name: Create workflow summary
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     if [[ "$LIBS_UP_TO_DATE" == "true" ]]; then
-      #       echo "# :white_check_mark: All libraries from librustzcash are up to date :white_check_mark: " >> $GITHUB_STEP_SUMMARY
-      #       exit 0
-      #     fi
-      #
-      #     if [[ "$ISSUE_ALREADY_EXISTS" == "true" ]]; then
-      #       echo "# :page_with_curl: An issue already exists for those library versions :page_with_curl: " >> $GITHUB_STEP_SUMMARY
-      #       echo "**[VIEW EXISTING ISSUE]($EXISTING_ISSUE_URL)**" >> $GITHUB_STEP_SUMMARY
-      #       exit 0
-      #     fi
-      #
-      #     echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
-      #     workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-      #     echo "You can also view the public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
-      #
-      #     IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-      #     for lib_name in "${arr[@]}"; do
-      #       if [[ -z "$lib_name" ]]; then
-      #         continue
-      #       fi
-      #
-      #       LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-      #       LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-      #
-      #       echo "## ${lib_name}" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> $GITHUB_STEP_SUMMARY
-      #       echo "" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
-      #       lib_diff=`cat $lib_name.diff`
-      #       echo "$lib_diff" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-      #     done
-      #
-      #     if [[ "$BUILD_FAILING" == "true" ]]; then
-      #       echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
-      #       workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-      #       echo "You can also view the public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-      #       output=`cat build_output`
-      #       echo "$output" >> $GITHUB_STEP_SUMMARY
-      #       echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-      #     fi
-      #
-      #     if [[ "$BUILD_FAILING" == "false" ]]; then
-      #       echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
-      #     fi
-      #
-      # # Run only if an issue doesnt exist and the build fails
-      # - name: Create issue
-      #   if: env.ISSUE_ALREADY_EXISTS == 'false'
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     workflow_summary_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      #     echo "**[CHECK GITHUB ACTIONS WORKFLOW SUMMARY]($workflow_summary_url)**" >> issue_body
-      #
-      #     echo "# :warning: New versions of librustzcash libraries are present :warning: " >> issue_body
-      #     workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-      #     echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> issue_body
-      #
-      #     if [[ "$BUILD_FAILING" == "false" ]]; then
-      #       echo "# :white_check_mark: Build doesn't fail after updating to the newer versions :white_check_mark: " >> issue_body
-      #     fi
-      #
-      #     IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-      #     for lib_name in "${arr[@]}"; do
-      #       if [[ -z "$lib_name" ]]; then
-      #         continue
-      #       fi
-      #
-      #       LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-      #       LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-      #
-      #       echo "## ${lib_name}" >> issue_body
-      #       echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> issue_body
-      #       echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> issue_body
-      #       echo "" >> issue_body
-      #       echo "\`\`\`diff" >> issue_body
-      #       lib_diff=`cat $lib_name.diff`
-      #       echo "$lib_diff" >> issue_body
-      #       # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
-      #       if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
-      #         head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
-      #         echo "..." >> issue_body
-      #         echo "" >> issue_body
-      #         echo "\`\`\`" >> issue_body
-      #         echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
-      #       else
-      #         echo "\`\`\`" >> issue_body
-      #       fi
-      #     done
-      #
-      #     if [[ "$BUILD_FAILING" == "true" ]]; then
-      #       echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> issue_body
-      #       workflow_build_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-      #       echo "You can view the also public API diff between versions in the **[CI logs]($workflow_build_url)**." >> issue_body
-      #       echo "\`\`\`" >> issue_body
-      #       output=`cat build_output | grep -v "Compiling"`
-      #       echo "$output" >> issue_body
-      #       # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
-      #       if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
-      #         head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
-      #         echo "..." >> issue_body
-      #         echo "" >> issue_body
-      #         echo "\`\`\`" >> issue_body
-      #         echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
-      #       else
-      #         echo "\`\`\`" >> issue_body
-      #       fi
-      #     fi
-      #
-      #
-      #     IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-      #     for issue_label in "${arr[@]}"; do
-      #       gh label create $issue_label --repo $GITHUB_REPOSITORY --force
-      #     done
-      #
-      #     cmd_args=("gh" "issue" "create" "--repo" "$GITHUB_REPOSITORY" "--title" "New versions of librustzcash. Please review." "--body-file" "issue_body")
-      #     IFS=';' read -ra arr <<< "$ISSUE_LABELS"
-      #     for issue_label in "${arr[@]}"; do
-      #       cmd_args+=("--label" "$issue_label")
-      #     done
-      #     "${cmd_args[@]}"
+      - name: Create workflow summary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$LIBS_UP_TO_DATE" == "true" ]]; then
+            echo "# :white_check_mark: All libraries from librustzcash are up to date :white_check_mark: " >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
 
-#     # TODO: No idea why cargo outdated doesn't work without cd
+          if [[ "$ISSUE_ALREADY_EXISTS" == "true" ]]; then
+            echo "# :page_with_curl: An issue already exists for those library versions :page_with_curl: " >> $GITHUB_STEP_SUMMARY
+            echo "**[VIEW EXISTING ISSUE]($EXISTING_ISSUE_URL)**" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
+          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          echo "You can also view the public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
+
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
+          for lib_name in "${arr[@]}"; do
+            if [[ -z "$lib_name" ]]; then
+              continue
+            fi
+
+            LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+
+            echo "## ${lib_name}" >> $GITHUB_STEP_SUMMARY
+            echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> $GITHUB_STEP_SUMMARY
+            echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
+            lib_diff=`cat $lib_name.diff`
+            echo "$lib_diff" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+          if [[ "$BUILD_FAILING" == "true" ]]; then
+            echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
+            workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+            echo "You can also view the public API diff between versions in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            output=`cat build_output`
+            echo "$output" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "$BUILD_FAILING" == "false" ]]; then
+            echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # Run only if an issue doesnt exist and the build fails
+      - name: Create issue
+        if: env.ISSUE_ALREADY_EXISTS == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          workflow_summary_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          echo "**[CHECK GITHUB ACTIONS WORKFLOW SUMMARY]($workflow_summary_url)**" >> issue_body
+
+          echo "# :warning: New versions of librustzcash libraries are present :warning: " >> issue_body
+          workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          echo "You can view the also public API diff between versions in the **[CI logs]($workflow_url)**." >> issue_body
+
+          if [[ "$BUILD_FAILING" == "false" ]]; then
+            echo "# :white_check_mark: Build doesn't fail after updating to the newer versions :white_check_mark: " >> issue_body
+          fi
+
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
+          for lib_name in "${arr[@]}"; do
+            if [[ -z "$lib_name" ]]; then
+              continue
+            fi
+
+            LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
+            LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
+
+            echo "## ${lib_name}" >> issue_body
+            echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> issue_body
+            echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> issue_body
+            echo "" >> issue_body
+            echo "\`\`\`diff" >> issue_body
+            lib_diff=`cat $lib_name.diff`
+            echo "$lib_diff" >> issue_body
+            # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
+            if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
+              head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
+              echo "..." >> issue_body
+              echo "" >> issue_body
+              echo "\`\`\`" >> issue_body
+              echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
+            else
+              echo "\`\`\`" >> issue_body
+            fi
+          done
+
+          if [[ "$BUILD_FAILING" == "true" ]]; then
+            echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> issue_body
+            workflow_build_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+            echo "You can view the also public API diff between versions in the **[CI logs]($workflow_build_url)**." >> issue_body
+            echo "\`\`\`" >> issue_body
+            output=`cat build_output | grep -v "Compiling"`
+            echo "$output" >> issue_body
+            # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
+            if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
+              head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
+              echo "..." >> issue_body
+              echo "" >> issue_body
+              echo "\`\`\`" >> issue_body
+              echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
+            else
+              echo "\`\`\`" >> issue_body
+            fi
+          fi
+
+
+          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
+          for issue_label in "${arr[@]}"; do
+            gh label create $issue_label --repo $GITHUB_REPOSITORY --force
+          done
+
+          cmd_args=("gh" "issue" "create" "--repo" "$GITHUB_REPOSITORY" "--title" "New versions of librustzcash. Please review." "--body-file" "issue_body")
+          IFS=';' read -ra arr <<< "$ISSUE_LABELS"
+          for issue_label in "${arr[@]}"; do
+            cmd_args+=("--label" "$issue_label")
+          done
+          "${cmd_args[@]}"
