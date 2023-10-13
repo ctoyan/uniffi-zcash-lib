@@ -85,34 +85,21 @@ jobs:
         id: test_build
         continue-on-error: true
         run: |
-          echo "ASDF"
           cargo install cargo-edit
-          echo "KOR"
 
-          source ./uniffi-zcash-lib/scripts/ci/build.sh
-          echo "KOR4e"
-          upgrade "$OUTDATED_LIBS"
-          echo "KOR4eeeeEe"
+          source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
+          upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
 
           cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
 
           if [ ${command_failed:-0} -eq 1 ]; then
-              echo 12345
-              does_build_fail="true"
+              echo "BUILD_FAILING=true" >> $GITHUB_ENV
           else
-              echo 1234534612312312
-              does_build_fail="false"
+              echo "BUILD_FAILING=false" >> $GITHUB_ENV
           fi
-
-          echo $does_build_fail
-          echo 123456
           # revert back to original dependency versions
           git -C ./uniffi-zcash-lib checkout .
-          echo 1234567
           cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
-          echo 12345678
-
-          echo "BUILD_FAILING=$does_build_fail" >> $GITHUB_ENV
 
       # Exports:
       # ${lib_name}_colored.diff file for every outdated library - for output in the github workflow console
@@ -122,63 +109,31 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          echo $BUILD_FAILING
-      #     IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-      #
-      #     # we use this program for grepping code contextually, from within the rust tool
-      #     cargo install ast-grep
-      #
-      #     for lib_name in "${arr[@]}"; do
-      #       if [[ -z "$lib_name" ]]; then
-      #         continue
-      #       fi
-      #
-      #       # this is faster than "cargo outdated", especially in a loop
-      #       LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-      #       LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-      #
-      #       # write the diffs to files, which we show in a separate step for better readability
-      #       # for colored output ANSI color codes are written in the file and can't be rendered in markdown
-      #       #
-      #       # colored output
-      #       cargo run \
-      #       --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml \
-      #       -p uniffi-zcash-cli diff \
-      #       --grep-dir `realpath ./uniffi-zcash-lib/lib/uniffi-zcash` \
-      #       --lib-name "$lib_name" \
-      #       --lib-old-version "$LIB_CURRENT_VERSION" \
-      #       --lib-new-version "$LIB_LATEST_VERSION" \
-      #       --color always > "${lib_name}_colored.diff"
-      #
-      #       # non-colored output
-      #       cargo run \
-      #       --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml \
-      #       -p uniffi-zcash-cli diff \
-      #       --grep-dir `realpath ./uniffi-zcash-lib/lib/uniffi-zcash` \
-      #       --lib-name "$lib_name" \
-      #       --lib-old-version "$LIB_CURRENT_VERSION" \
-      #       --lib-new-version "$LIB_LATEST_VERSION" \
-      #       --color never > "${lib_name}.diff"
-      #     done
-      #
-      # # Step only for better diff visibility and linkability
-      # # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
-      # - name: Show public API diffs
-      #   if: env.ISSUE_ALREADY_EXISTS == 'false' && env.LIBS_UP_TO_DATE == 'false' && env.BUILD_FAILING == 'true'
-      #   run: |
-      #     IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-      #
-      #     for lib_name in "${arr[@]}"; do
-      #       if [[ -z "$lib_name" ]]; then
-      #         continue
-      #       fi
-      #       echo "---"
-      #       echo "${lib_name}"
-      #       echo "---"
-      #       cat "${lib_name}_colored.diff"
-      #       echo ""
-      #     done
-      #
+          # we use this program for grepping code contextually, from within the rust tool
+          cargo install ast-grep
+
+          local grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
+          source ./uniffi-zcash-lib/scripts/ci/diff.sh
+          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path'
+
+      # Step only for better diff visibility and linkability
+      # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
+      - name: Show public API diffs
+        if: env.ISSUE_ALREADY_EXISTS == 'false' && env.LIBS_UP_TO_DATE == 'false' && env.BUILD_FAILING == 'true'
+        run: |
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
+
+          for lib_name in "${arr[@]}"; do
+            if [[ -z "$lib_name" ]]; then
+              continue
+            fi
+            echo "---"
+            echo "${lib_name}"
+            echo "---"
+            cat "${lib_name}_colored.diff"
+            echo ""
+          done
+
       # - name: Create workflow summary
       #   env:
       #     GH_TOKEN: ${{ github.token }}
