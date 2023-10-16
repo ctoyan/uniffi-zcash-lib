@@ -195,7 +195,7 @@ jobs:
           # done
 
           build_result_workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-          print_build_result $OUTDATED_LIBS $build_result_workflow_url >> $GITHUB_STEP_SUMMARY
+          print_build_result $BUILD_FAILING $build_result_workflow_url >> $GITHUB_STEP_SUMMARY
 
           # if [[ "$BUILD_FAILING" == "true" ]]; then
           #   echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
