@@ -118,12 +118,20 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          # we use this program for grepping code contextually, from within the rust tool
-          cargo install ast-grep
+          echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
-          grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
-          source ./uniffi-zcash-lib/scripts/ci/diff.sh
-          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path"
+          for lib_name in "${arr[@]}"; do
+            echo "KOR" > "${lib_name}_colored.diff"
+            echo "KORCOLORED" > "${lib_name}.diff"
+          done
+
+          # # we use this program for grepping code contextually, from within the rust tool
+          # cargo install ast-grep
+          #
+          # grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
+          # source ./uniffi-zcash-lib/scripts/ci/diff.sh
+          # diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path"
 
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
@@ -186,19 +194,22 @@ jobs:
           #   echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           # done
 
-          if [[ "$BUILD_FAILING" == "true" ]]; then
-            echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
-            workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-            echo "You can also view the build result in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            output=`cat build_output`
-            echo "$output" >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          fi
+          build_result_workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+          print_build_result $OUTDATED_LIBS $build_result_workflow_url >> $GITHUB_STEP_SUMMARY
 
-          if [[ "$BUILD_FAILING" == "false" ]]; then
-            echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
-          fi
+          # if [[ "$BUILD_FAILING" == "true" ]]; then
+          #   echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> $GITHUB_STEP_SUMMARY
+          #   workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+          #   echo "You can also view the build result in the **[CI logs]($workflow_url)**." >> $GITHUB_STEP_SUMMARY
+          #   echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          #   output=`cat build_output`
+          #   echo "$output" >> $GITHUB_STEP_SUMMARY
+          #   echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          # fi
+          #
+          # if [[ "$BUILD_FAILING" == "false" ]]; then
+          #   echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: " >> $GITHUB_STEP_SUMMARY
+          # fi
 
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue

@@ -37,3 +37,22 @@ print_workflow_diff() {
 		echo -e "\`\`\` \n"
 	done
 }
+
+print_build_result() {
+	local build_failing=$1
+	local build_result_workflow_url=$2
+
+	if [[ "$build_failing" == "true" ]]; then
+		echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: "
+		echo "You can also view the build result in the **[CI logs]($build_result_workflow_url)**."
+		echo "\`\`\`"
+		output=$(cat build_output)
+		echo "$output"
+		echo "\`\`\`"
+	fi
+
+	if [[ "$build_failing" == "false" ]]; then
+		echo "# :white_check_mark: Build doesn't fail when bumping to the newer versions :white_check_mark: "
+	fi
+
+}
