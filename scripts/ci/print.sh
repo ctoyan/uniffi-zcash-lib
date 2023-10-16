@@ -109,14 +109,13 @@ print_issue_build_result() {
 
 cut_issue_body() {
 	# if the body has reached github issue body limit, then close the ``` and show message that limit is reached
-	if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
+	if [[ $(wc -m <issue_body) -gt 65300 ]]; then
 		head -c 65300 <issue_body >temp_issue_body && mv temp_issue_body issue_body
+		head -n -1 issue_body # removes the last row from the file (expected to be ```), so we can continue with the "...".
 		echo "..." >>issue_body
 		echo "" >>issue_body
 		echo "\`\`\`" >>issue_body
 		echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >>issue_body
-	else
-		echo "\`\`\`" >>issue_body
 	fi
 
 }

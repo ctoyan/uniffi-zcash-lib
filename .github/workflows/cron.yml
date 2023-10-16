@@ -91,24 +91,24 @@ jobs:
         id: test_build
         continue-on-error: true
         run: |
-          echo "KOR" > build_output
-          echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          # echo "KOR" > build_output
+          # echo "BUILD_FAILING=true" >> $GITHUB_ENV
 
-          # cargo install cargo-edit
-          #
-          # source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
-          # upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
-          #
-          # cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
-          #
-          # if [ ${command_failed:-0} -eq 1 ]; then
-          #     echo "BUILD_FAILING=true" >> $GITHUB_ENV
-          # else
-          #     echo "BUILD_FAILING=false" >> $GITHUB_ENV
-          # fi
-          # # revert back to original dependency versions
-          # git -C ./uniffi-zcash-lib checkout .
-          # cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
+          cargo install cargo-edit
+
+          source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
+          upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
+
+          cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
+
+          if [ ${command_failed:-0} -eq 1 ]; then
+              echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          else
+              echo "BUILD_FAILING=false" >> $GITHUB_ENV
+          fi
+          # revert back to original dependency versions
+          git -C ./uniffi-zcash-lib checkout .
+          cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
 
       # Exports:
       # ${lib_name}_colored.diff file for every outdated library - for output in the github workflow console
@@ -118,20 +118,20 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          echo "BUILD_FAILING=true" >> $GITHUB_ENV
-          IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-
-          for lib_name in "${arr[@]}"; do
-            echo "KORCOLORED" > "${lib_name}_colored.diff"
-            echo "KOR" > "${lib_name}.diff"
-          done
-
-          # # we use this program for grepping code contextually, from within the rust tool
-          # cargo install ast-grep
+          # echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          # IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
           #
-          # grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
-          # source ./uniffi-zcash-lib/scripts/ci/diff.sh
-          # diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path"
+          # for lib_name in "${arr[@]}"; do
+          #   echo "KORCOLORED" > "${lib_name}_colored.diff"
+          #   echo "KOR" > "${lib_name}.diff"
+          # done
+
+          # we use this program for grepping code contextually, from within the rust tool
+          cargo install ast-grep
+
+          grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
+          source ./uniffi-zcash-lib/scripts/ci/diff.sh
+          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path"
 
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
@@ -169,11 +169,11 @@ jobs:
 
           source ./uniffi-zcash-lib/scripts/ci/print.sh
 
-          diff_result_workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-          print_workflow_diff $OUTDATED_LIBS $diff_result_workflow_url >> $GITHUB_STEP_SUMMARY
+          workflow_diff_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
+          print_workflow_diff $OUTDATED_LIBS $workflow_diff_job_url >> $GITHUB_STEP_SUMMARY
 
-          build_result_workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-          print_workflow_build_result $BUILD_FAILING $build_result_workflow_url >> $GITHUB_STEP_SUMMARY
+          workflow_build_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
+          print_workflow_build_result $BUILD_FAILING $workflow_build_job_url >> $GITHUB_STEP_SUMMARY
 
       # Run only if an issue doesnt exist and the build fails
       - name: Create issue
@@ -191,6 +191,7 @@ jobs:
 
           issue_build_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
           print_issue_build_result $BUILD_FAILING $issue_build_job_url >> issue_body
+
           cut_issue_body
 
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
