@@ -188,10 +188,10 @@ jobs:
 
           issue_diff_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
           print_issue_diff $OUTDATED_LIBS $issue_diff_job_url >> issue_body
+          cut_msg
 
           issue_build_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
           print_issue_build_result $BUILD_FAILING $issue_build_job_url >> issue_body
-
           cut_msg
 
           # IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
