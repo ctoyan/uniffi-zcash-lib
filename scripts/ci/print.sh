@@ -85,6 +85,7 @@ print_issue_diff() {
 		echo ""
 		echo "\`\`\`diff"
 		cat "$lib_name".diff
+		echo "\`\`\`"
 	done
 }
 
