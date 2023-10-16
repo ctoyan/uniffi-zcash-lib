@@ -122,8 +122,8 @@ jobs:
           IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
 
           for lib_name in "${arr[@]}"; do
-            echo "KOR" > "${lib_name}_colored.diff"
-            echo "KORCOLORED" > "${lib_name}.diff"
+            echo "KORCOLORED" > "${lib_name}_colored.diff"
+            echo "KOR" > "${lib_name}.diff"
           done
 
           # # we use this program for grepping code contextually, from within the rust tool
@@ -188,62 +188,10 @@ jobs:
 
           issue_diff_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
           print_issue_diff $OUTDATED_LIBS $issue_diff_job_url >> issue_body
-          cut_msg
 
           issue_build_job_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
           print_issue_build_result $BUILD_FAILING $issue_build_job_url >> issue_body
-          cut_msg
-
-          # IFS=';' read -ra arr <<< "$OUTDATED_LIBS"
-          # for lib_name in "${arr[@]}"; do
-          #   if [[ -z "$lib_name" ]]; then
-          #     continue
-          #   fi
-          #
-          #   LIB_LATEST_VERSION=$(curl --silent "https://crates.io/api/v1/crates/$lib_name" | jq -r '.crate.max_stable_version')
-          #   LIB_CURRENT_VERSION=$(cargo metadata --format-version=1 -q --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml | jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
-          #
-          #   echo "## ${lib_name}" >> issue_body
-          #   echo "\`CURRENTLY USED VERSION\`    :arrow_right: ${LIB_CURRENT_VERSION}" >> issue_body
-          #   echo "\`LATEST PUBLISHED VERSION\`  :arrow_right: ${LIB_LATEST_VERSION}" >> issue_body
-          #   echo "" >> issue_body
-          #   echo "\`\`\`diff" >> issue_body
-          #   lib_diff=`cat $lib_name.diff`
-          #   echo "$lib_diff" >> issue_body
-          #   # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
-          #   if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
-          #     head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
-          #     echo "..." >> issue_body
-          #     echo "" >> issue_body
-          #     echo "\`\`\`" >> issue_body
-          #     echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
-          #   else
-          #     echo "\`\`\`" >> issue_body
-          #   fi
-          # done
-
-          # if [[ "$BUILD_FAILING" == "false" ]]; then
-          #   echo "# :white_check_mark: Build doesn't fail after updating to the newer versions :white_check_mark: " >> issue_body
-          # fi
-          #
-          # if [[ "$BUILD_FAILING" == "true" ]]; then
-          #   echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: " >> issue_body
-          #   workflow_build_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' | tr -d "\n")
-          #   echo "You can view the also public API diff between versions in the **[CI logs]($workflow_build_url)**." >> issue_body
-          #   echo "\`\`\`" >> issue_body
-          #   output=`cat build_output | grep -v "Compiling"`
-          #   echo "$output" >> issue_body
-          #   # if the body has reached github issue body limit, then close the ``` and show message that limit is reached
-          #   if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
-          #     head -c 65300 < issue_body > temp_issue_body && mv temp_issue_body issue_body
-          #     echo "..." >> issue_body
-          #     echo "" >> issue_body
-          #     echo "\`\`\`" >> issue_body
-          #     echo "## :construction: The Github issue body size limit was reached. Please visit the summary link at the top of the issue for the full message :construction: " >> issue_body
-          #   else
-          #     echo "\`\`\`" >> issue_body
-          #   fi
-          # fi
+          cut_issue_body
 
           IFS=';' read -ra arr <<< "$ISSUE_LABELS"
           for issue_label in "${arr[@]}"; do

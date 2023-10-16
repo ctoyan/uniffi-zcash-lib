@@ -101,13 +101,13 @@ print_issue_build_result() {
 		echo "# :warning: Build fails after bumping to the newer versions with the following output: :warning: "
 		echo "You can view the also public API diff between versions in the **[CI logs]($build_result_workflow_url)**."
 		echo "\`\`\`"
-		output=$(cat build_output | grep -v "Compiling")
-		echo "$output"
+		grep -v "Compiling" <build_output
+		echo "\`\`\`"
 	fi
 
 }
 
-cut_msg() {
+cut_issue_body() {
 	# if the body has reached github issue body limit, then close the ``` and show message that limit is reached
 	if [[ $(cat issue_body | wc -m) -gt 65300 ]]; then
 		head -c 65300 <issue_body >temp_issue_body && mv temp_issue_body issue_body
