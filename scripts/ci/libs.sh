@@ -11,7 +11,6 @@ set -eou pipefail
 #
 # Returns:
 # - The labels that are used when searching for or creating a Github issue, in format 'lib_name-current_ver-latest_ver'
-
 get_libs() {
 	local librustzcash_cargo_path=$1
 	local uniffi_cargo_path=$2
