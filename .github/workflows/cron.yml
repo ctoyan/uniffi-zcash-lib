@@ -161,8 +161,7 @@ jobs:
 
           source ./uniffi-zcash-lib/scripts/ci/workflow.sh
           diff_result_workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
-          kor=$(print_workflow_diff $OUTDATED_LIBS $diff_result_workflow_url)
-          echo $kor >> $GITHUB_STEP_SUMMARY
+          print_workflow_diff $OUTDATED_LIBS $diff_result_workflow_url >> $GITHUB_STEP_SUMMARY
 
           # echo "# :warning: New versions of librustzcash libraries are present :warning: " >> $GITHUB_STEP_SUMMARY
           # workflow_url=$(gh run --repo ${{ github.repository }} view ${{ github.run_id }} --json jobs --jq '.jobs[] | select(.name == "${{ github.job }}") | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' | tr -d "\n")
