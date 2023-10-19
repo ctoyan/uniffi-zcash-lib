@@ -27,6 +27,7 @@ get_libs() {
 	)
 
 	echo "$output"
+    # TODO: FIX
 	# local librustzcash_cargo_path="$1"
 	# local uniffi_cargo_path="$2"
 	# if [[ -z "$librustzcash_cargo_path" || -z "$uniffi_cargo_path" ]]; then

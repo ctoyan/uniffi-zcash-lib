@@ -32,14 +32,12 @@ jobs:
       # USED_LIBS - list of librustzcash library names, separated by ';', which are used in the uniffi projects (ex - 'zcash_primitives;zcash_address;')
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
-          source ./uniffi-zcash-lib/scripts/ci/libs.sh
-          get_libs "librustzcash/Cargo.toml" "uniffi-zcash-lib/lib/Cargo.toml"
-          # {
-          #   echo 'USED_LIBS<<EOF'
-          #   source ./uniffi-zcash-lib/scripts/ci/libs.sh
-          #   get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml
-          #   echo EOF
-          # } >> "$GITHUB_ENV"
+          {
+            echo 'USED_LIBS<<EOF'
+            source ./uniffi-zcash-lib/scripts/ci/libs.sh
+            get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml
+            echo EOF
+          } >> "$GITHUB_ENV"
 
         # Exports:
         # OUTDATED_LIBS - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
