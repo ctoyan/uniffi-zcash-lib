@@ -29,7 +29,7 @@ get_libs() {
 				grep "$pkg_name" |
 				sort -u |
 				tr '\n' ';')
-			output="$result"
+			output="$output$result"
 		done
 
 	echo "$output"
