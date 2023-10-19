@@ -23,13 +23,16 @@ get_libs() {
 	cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
 		jq -r '.packages[] | .name' |
 		while read -r pkg_name; do
+			echo $pkg_name
 			local result
-			result=$(cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
+			result=$(cargo metadata --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
 				jq -r '.packages[] | .dependencies[] | .name' |
 				grep "$pkg_name" |
 				sort -u |
 				tr '\n' ';')
+			echo $result
 			output="$output$result"
+			echo $output
 		done
 
 	echo "$output"
@@ -86,3 +89,9 @@ get_outdated_libs_json() {
 
 	echo "$outdated_libs_json"
 }
+
+main() {
+	get_libs $1 $2
+}
+
+main $1 $2
