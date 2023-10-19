@@ -12,36 +12,41 @@ set -eou pipefail
 # Returns:
 # - The labels that are used when searching for or creating a Github issue, in format 'lib_name-current_ver-latest_ver'
 get_libs() {
-	local librustzcash_cargo_path="$1"
-	local uniffi_cargo_path="$2"
+	local librustzcash_cargo_path=$1
+	local uniffi_cargo_path=$2
 	if [[ -z "$librustzcash_cargo_path" || -z "$uniffi_cargo_path" ]]; then
 		echo "required parameter for get_libs() is empty" 1>&2
 		exit 1
 	fi
-	echo $uniffi_cargo_path
-	echo $librustzcash_cargo_path
 
 	local output
-	cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
-		jq -r '.packages[] | .name' |
-		while read -r pkg_name; do
-			echo $pkg_name
-			local temp=$pkg_name
-			local result
-			# result=$(cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
-			# 	jq -r '.packages[] | .dependencies[] | .name' |
-			# 	grep "$pkg_name" |
-			# 	sort -u |
-			# 	tr '\n' ';')
-			cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
-				jq -r '.packages[] | .dependencies[] | .name' |
-				grep "$temp" |
-				sort -u
-			# tr '\n' ';'
-			# output="$output$result"
-			# echo $output
-		done
+	output=$(
+		cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
+			jq -r '.packages[] | .name' |
+			xargs -I {} sh -c "cargo metadata --quiet --format-version=1 --no-deps --manifest-path=$uniffi_cargo_path | jq -r '.packages[] | .dependencies[] | .name' | grep '{}' | sort -u | tr '\n' ';'"
+	)
 
+	echo "$output"
+	# local librustzcash_cargo_path="$1"
+	# local uniffi_cargo_path="$2"
+	# if [[ -z "$librustzcash_cargo_path" || -z "$uniffi_cargo_path" ]]; then
+	# 	echo "required parameter for get_libs() is empty" 1>&2
+	# 	exit 1
+	# fi
+	#
+	# local output
+	# cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
+	# 	jq -r '.packages[] | .name' |
+	# 	while read -r pkg_name; do
+	# 		local result
+	# 		result=$(cargo metadata --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
+	# 			jq -r '.packages[] | .dependencies[] | .name' |
+	# 			grep "$pkg_name" |
+	# 			sort -u |
+	# 			tr '\n' ';')
+	# 		output="$output$result"
+	# 	done
+	#
 	# echo "$output"
 }
 
