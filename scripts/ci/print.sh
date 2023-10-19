@@ -141,7 +141,7 @@ get_build_job_url() {
 	result=gh run \
 		--repo "$GITHUB_REPOSITORY" view "$GITHUB_RUN_ID" \
 		--json jobs \
-		--jq '.jobs[] | select(.name == '"$GITHUB_JOB_ID"') | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' |
+		--jq '.jobs[] | select(.name == '"$GITHUB_JOB"') | .url, (.steps[] | select(.name == "Show public API diffs") | "#step:\(.number):1")' |
 		tr -d "\n"
 
 	echo "$result"
@@ -153,7 +153,7 @@ get_diff_job_url() {
 	result=gh run \
 		--repo "$GITHUB_REPOSITORY" view "$GITHUB_RUN_ID" \
 		--json jobs \
-		--jq '.jobs[] | select(.name == '"$GITHUB_JOB_ID"') | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' |
+		--jq '.jobs[] | select(.name == '"$GITHUB_JOB"') | .url, (.steps[] | select(.name == "Check if uniffi-zcash-lib build is failing") | "#step:\(.number):1")' |
 		tr -d "\n"
 
 	echo "$result"
