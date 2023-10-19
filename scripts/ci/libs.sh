@@ -32,11 +32,11 @@ get_libs() {
 			# 	grep "$pkg_name" |
 			# 	sort -u |
 			# 	tr '\n' ';')
-			cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
-				jq -r '.packages[] | .dependencies[] | .name' |
-				grep "$pkg_name" |
-				sort -u |
-				tr '\n' ';'
+			cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path"
+			# jq -r '.packages[] | .dependencies[] | .name' |
+			# grep "$pkg_name" |
+			# sort -u |
+			# tr '\n' ';'
 			# output="$output$result"
 			# echo $output
 		done
