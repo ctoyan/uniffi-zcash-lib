@@ -24,20 +24,16 @@ pub(crate) fn get_manifest_from_package_name(
 }
 
 // Copy files from source to destination recursively.
-pub(crate) fn copy_if_not_exists(
+pub(crate) fn copy_dir(
     source: impl AsRef<Path>,
     destination: impl AsRef<Path>,
 ) -> anyhow::Result<()> {
-    if Path::exists(destination.as_ref()) {
-        return Ok(());
-    }
-
     fs::create_dir_all(&destination)?;
     for entry in fs::read_dir(source)? {
         let entry = entry?;
         let filetype = entry.file_type()?;
         if filetype.is_dir() {
-            copy_if_not_exists(entry.path(), destination.as_ref().join(entry.file_name()))?;
+            copy_dir(entry.path(), destination.as_ref().join(entry.file_name()))?;
         } else {
             fs::copy(entry.path(), destination.as_ref().join(entry.file_name()))?;
         }

@@ -7,7 +7,7 @@ use self::{
     colors::{color_item_with_diff, color_token_stream},
     git::init_libs_repo,
     grep_item::GrepItem,
-    utils::{copy_if_not_exists, get_manifest_from_package_name},
+    utils::{copy_dir, get_manifest_from_package_name},
 };
 
 mod colors;
@@ -36,7 +36,7 @@ pub fn generate_diff(
     let _ = init_libs_repo(package_name, libs_repo_current_folder, package_old_version)?;
 
     // copy instead of cloning it again
-    copy_if_not_exists(
+    copy_dir(
         Path::new(libs_repo_current_folder),
         Path::new(libs_repo_latest_folder),
     )?;
