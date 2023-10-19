@@ -33,7 +33,7 @@ jobs:
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           source ./uniffi-zcash-lib/scripts/ci/libs.sh
-          get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml
+          get_libs "librustzcash/Cargo.toml" "uniffi-zcash-lib/lib/Cargo.toml"
           # {
           #   echo 'USED_LIBS<<EOF'
           #   source ./uniffi-zcash-lib/scripts/ci/libs.sh
