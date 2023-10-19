@@ -1,6 +1,7 @@
 on:
-  schedule:
-    - cron: 0 0 * * * # at the end of each day
+  push:
+  # schedule:
+  #   - cron: 0 0 * * * # at the end of each day
 
 jobs:
   check_for_public_api_diffs:
