@@ -14,8 +14,9 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          repository: eigerco/uniffi-zcash-lib
+          repository: ctoyan/uniffi-zcash-lib
           path: uniffi-zcash-lib
+          ref: test-tool
 
       - name: Install cargo
         uses: actions-rs/toolchain@v1
