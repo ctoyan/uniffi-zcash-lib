@@ -27,17 +27,21 @@ get_libs() {
 		while read -r pkg_name; do
 			echo $pkg_name
 			local result
-			result=$(cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
+			# result=$(cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
+			# 	jq -r '.packages[] | .dependencies[] | .name' |
+			# 	grep "$pkg_name" |
+			# 	sort -u |
+			# 	tr '\n' ';')
+			cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
 				jq -r '.packages[] | .dependencies[] | .name' |
 				grep "$pkg_name" |
 				sort -u |
-				tr '\n' ';')
-			echo $result
-			output="$output$result"
-			echo $output
+				tr '\n' ';'
+			# output="$output$result"
+			# echo $output
 		done
 
-	echo "$output"
+	# echo "$output"
 }
 
 # Use jq to get the outdated libs from the "cargo outdated" JSON string
