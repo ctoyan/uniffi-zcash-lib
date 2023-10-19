@@ -26,6 +26,7 @@ get_libs() {
 		jq -r '.packages[] | .name' |
 		while read -r pkg_name; do
 			echo $pkg_name
+			local temp=$pkg_name
 			local result
 			# result=$(cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
 			# 	jq -r '.packages[] | .dependencies[] | .name' |
@@ -34,7 +35,7 @@ get_libs() {
 			# 	tr '\n' ';')
 			cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
 				jq -r '.packages[] | .dependencies[] | .name' |
-				grep "$pkg_name" |
+				grep "$temp" |
 				sort -u
 			# tr '\n' ';'
 			# output="$output$result"
