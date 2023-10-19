@@ -18,6 +18,8 @@ get_libs() {
 		echo "required parameter for get_libs() is empty" 1>&2
 		exit 1
 	fi
+	echo $uniffi_cargo_path
+	echo $librustzcash_cargo_path
 
 	local output
 	cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
@@ -25,7 +27,7 @@ get_libs() {
 		while read -r pkg_name; do
 			echo $pkg_name
 			local result
-			result=$(cargo metadata --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
+			result=$(cargo metadata --quiet --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
 				jq -r '.packages[] | .dependencies[] | .name' |
 				grep "$pkg_name" |
 				sort -u |
