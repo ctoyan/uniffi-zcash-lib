@@ -119,8 +119,9 @@ jobs:
           cargo install ast-grep
 
           grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
+          librustzcash_absolute_path=$(realpath ./librustzcash)
           source ./uniffi-zcash-lib/scripts/ci/diff.sh
-          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path"
+          diff "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml "$grep_dir_absolute_path" "$librustzcash_absolute_path"
 
       # Step only for better diff visibility and linkability
       # If you change the name of this step, make sure it's changed in the "Create workflow summary" gh command too
