@@ -137,6 +137,12 @@ cut_issue_body() {
 
 # Echoes the build job URL, which points to the build logs in the Github CI console
 get_build_job_url() {
+	echo "REPO"
+	echo $GITHUB_REPOSITORY
+	echo "RUN"
+	echo $GITHUB_RUN_ID
+	echo "JOB"
+	echo $GITHUB_JOB
 	local result
 	result=$(gh run \
 		--repo "$GITHUB_REPOSITORY" view "$GITHUB_RUN_ID" \

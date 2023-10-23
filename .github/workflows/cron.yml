@@ -182,9 +182,13 @@ jobs:
           source ./uniffi-zcash-lib/scripts/ci/print.sh
 
           diff_job_url=$(get_diff_job_url)
+          echo "KOOOOOOOOOOOOOOOR"
+          echo "$diff_job_url"
           print_issue_diff $OUTDATED_LIBS $diff_job_url >> issue_body
 
           build_job_url=$(get_build_job_url)
+          echo "KOOOOOOOOOOOOOOOR2222"
+          echo "$build_job_url"
           print_issue_build_result $BUILD_FAILING $build_job_url >> issue_body
 
           cut_issue_body
