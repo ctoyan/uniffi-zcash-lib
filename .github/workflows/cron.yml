@@ -12,8 +12,8 @@ jobs:
         with:
           repository: zcash/librustzcash
           path: librustzcash
-          fetch-tags: true
           fetch-depth: 0
+          fetch-tags: true
 
       - uses: actions/checkout@v4
         with:
@@ -93,24 +93,21 @@ jobs:
         id: test_build
         continue-on-error: true
         run: |
+          cargo install cargo-edit
 
-          echo "BUILD_FAILING=true" >> $GITHUB_ENV
-          echo "kor" > build_output
-          # cargo install cargo-edit
-          #
-          # source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
-          # upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
-          #
-          # cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
-          #
-          # if [ ${command_failed:-0} -eq 1 ]; then
-          #     echo "BUILD_FAILING=true" >> $GITHUB_ENV
-          # else
-          #     echo "BUILD_FAILING=false" >> $GITHUB_ENV
-          # fi
-          # # revert back to original dependency versions
-          # git -C ./uniffi-zcash-lib checkout .
-          # cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
+          source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
+          upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
+
+          cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
+
+          if [ ${command_failed:-0} -eq 1 ]; then
+              echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          else
+              echo "BUILD_FAILING=false" >> $GITHUB_ENV
+          fi
+          # revert back to original dependency versions
+          git -C ./uniffi-zcash-lib checkout .
+          cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
 
       # Exports:
       # ${lib_name}_colored.diff file for every outdated library - for output in the github workflow console
