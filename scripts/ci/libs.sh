@@ -19,18 +19,18 @@ get_libs() {
 		exit 1
 	fi
 
-    local librustzcash_packages
+	local librustzcash_packages
 	librustzcash_packages=$(cargo metadata --format-version=1 --no-deps --quiet --manifest-path="$librustzcash_cargo_path" |
 		jq -r '.packages[] | .name' | tr '\n' '|' | sed 's/|$//')
 
-    local output
+	local output
 	output=$(cargo metadata --format-version=1 --no-deps --manifest-path="$uniffi_cargo_path" |
-        jq -r '.packages[] | .dependencies[] | .name' |
-        grep -Ei "$librustzcash_packages" |
-        sort -u |
-        tr '\n' ';')
+		jq -r '.packages[] | .dependencies[] | .name' |
+		grep -Ei "$librustzcash_packages" |
+		sort -u |
+		tr '\n' ';')
 
-    echo "$output"
+	echo "$output"
 }
 
 # Use jq to get the outdated libs from the "cargo outdated" JSON string
@@ -84,9 +84,3 @@ get_outdated_libs_json() {
 
 	echo "$outdated_libs_json"
 }
-
-main() {
-	get_libs $1 $2
-}
-
-main $1 $2
