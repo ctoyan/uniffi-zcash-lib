@@ -38,29 +38,31 @@ diff() {
 		lib_current_version=$(cargo metadata --format-version=1 -q --manifest-path="$uniffi_cargo_path" |
 			jq -r --arg lib_name "$lib_name" '.packages[] | select(.name == $lib_name) | .version')
 
-		# write the diffs to files, which we show in a separate step for better readability
-		# for colored output ANSI color codes are written in the file and can't be rendered in markdown
+		# # write the diffs to files, which we show in a separate step for better readability
+		# # for colored output ANSI color codes are written in the file and can't be rendered in markdown
+		# #
+		# # colored output
+		# cargo run \
+		# 	--manifest-path="$uniffi_cargo_path" \
+		# 	-p uniffi-zcash-cli diff \
+		# 	--grep-dir "$grep_dir" \
+		# 	--lib-name "$lib_name" \
+		# 	--lib-old-version "$lib_current_version" \
+		# 	--lib-new-version "$lib_latest_version" \
+		# 	--color always \
+		# 	--librustzcash-path "$librustzcash_abs_path" >"${lib_name}_colored.diff"
 		#
-		# colored output
-		cargo run \
-			--manifest-path="$uniffi_cargo_path" \
-			-p uniffi-zcash-cli diff \
-			--grep-dir "$grep_dir" \
-			--lib-name "$lib_name" \
-			--lib-old-version "$lib_current_version" \
-			--lib-new-version "$lib_latest_version" \
-			--color always \
-			--librustzcash-path "$librustzcash_abs_path" >"${lib_name}_colored.diff"
-
-		# non-colored output
-		cargo run \
-			--manifest-path="$uniffi_cargo_path" \
-			-p uniffi-zcash-cli diff \
-			--grep-dir "$grep_dir" \
-			--lib-name "$lib_name" \
-			--lib-old-version "$lib_current_version" \
-			--lib-new-version "$lib_latest_version" \
-			--color never \
-			--librustzcash-path "$librustzcash_abs_path" >"${lib_name}.diff"
+		# # non-colored output
+		# cargo run \
+		# 	--manifest-path="$uniffi_cargo_path" \
+		# 	-p uniffi-zcash-cli diff \
+		# 	--grep-dir "$grep_dir" \
+		# 	--lib-name "$lib_name" \
+		# 	--lib-old-version "$lib_current_version" \
+		# 	--lib-new-version "$lib_latest_version" \
+		# 	--color never \
+		# 	--librustzcash-path "$librustzcash_abs_path" >"${lib_name}.diff"
+		echo "colored kor diff" >"${lib_name}_colored.diff"
+		echo "kor diff" >"${lib_name}.diff"
 	done
 }

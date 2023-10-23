@@ -93,21 +93,24 @@ jobs:
         id: test_build
         continue-on-error: true
         run: |
-          cargo install cargo-edit
+          echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          echo "kor" > build_output
 
-          source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
-          upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
-
-          cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
-
-          if [ ${command_failed:-0} -eq 1 ]; then
-              echo "BUILD_FAILING=true" >> $GITHUB_ENV
-          else
-              echo "BUILD_FAILING=false" >> $GITHUB_ENV
-          fi
-          # revert back to original dependency versions
-          git -C ./uniffi-zcash-lib checkout .
-          cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
+          # cargo install cargo-edit
+          #
+          # source ./uniffi-zcash-lib/scripts/ci/upgrade.sh
+          # upgrade "$OUTDATED_LIBS" uniffi-zcash-lib/lib/Cargo.toml
+          #
+          # cargo build -p zcash --color=never --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml &>build_output || command_failed=1
+          #
+          # if [ ${command_failed:-0} -eq 1 ]; then
+          #     echo "BUILD_FAILING=true" >> $GITHUB_ENV
+          # else
+          #     echo "BUILD_FAILING=false" >> $GITHUB_ENV
+          # fi
+          # # revert back to original dependency versions
+          # git -C ./uniffi-zcash-lib checkout .
+          # cargo update -p zcash --manifest-path=./uniffi-zcash-lib/lib/Cargo.toml
 
       # Exports:
       # ${lib_name}_colored.diff file for every outdated library - for output in the github workflow console
@@ -117,9 +120,8 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
-          # git -C ./librustzcash pull
           # we use this program for grepping code contextually, from within the rust tool
-          cargo install ast-grep
+          # cargo install ast-grep
 
           grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
           librustzcash_absolute_path=$(realpath ./librustzcash)
@@ -182,7 +184,7 @@ jobs:
           diff_job_url=$(get_diff_job_url)
           print_issue_diff $OUTDATED_LIBS $diff_job_url >> issue_body
 
-          _build_job_url=$(get_build_job_url)
+          build_job_url=$(get_build_job_url)
           print_issue_build_result $BUILD_FAILING $build_job_url >> issue_body
 
           cut_issue_body
