@@ -155,6 +155,13 @@ get_build_job_url() {
 
 # Echoes the diff job URL, which points to the colored public API diff logs in the Github CI console
 get_diff_job_url() {
+	echo "REPO"
+	echo $GITHUB_REPOSITORY
+	echo "RUN"
+	echo $GITHUB_RUN_ID
+	echo "JOB"
+	echo $GITHUB_JOB
+
 	local result
 	result=$(gh run \
 		--repo "$GITHUB_REPOSITORY" view "$GITHUB_RUN_ID" \
