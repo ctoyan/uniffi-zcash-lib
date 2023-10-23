@@ -41,8 +41,10 @@ pub fn generate_diff(
         package_old_version,
     )?;
 
-    // copy instead of cloning it again
-    copy_dir_if_not_exists(temp_path_current.as_path(), temp_path_latest.as_path())?;
+    if librustzcash_path.is_empty() {
+        // copy instead of cloning it again
+        copy_dir_if_not_exists(temp_path_current.as_path(), temp_path_latest.as_path())?;
+    }
 
     let _ = init_libs_repo(
         package_name,

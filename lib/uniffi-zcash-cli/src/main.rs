@@ -269,9 +269,12 @@ fn main() -> anyhow::Result<()> {
                 .to_owned();
             let lib_old_version = args.try_get_one::<String>("lib_old_version")?.unwrap();
             let lib_new_version = args.try_get_one::<String>("lib_new_version")?.unwrap();
-            let librustzcash_path = args.try_get_one::<String>("librustzcash_path")?.unwrap();
-
             let grep_dir = args.try_get_one::<String>("grep_dir")?.unwrap();
+
+            let path_default = String::from("");
+            let librustzcash_path = args
+                .try_get_one::<String>("librustzcash_path")?
+                .unwrap_or(&path_default);
 
             generate_diff(
                 lib_name,
