@@ -13,6 +13,7 @@ jobs:
           repository: zcash/librustzcash
           path: librustzcash
           fetch-tags: true
+          fetch-depth: 0
 
       - uses: actions/checkout@v4
         with:
@@ -119,6 +120,7 @@ jobs:
         env:
           CARGO_TERM_COLOR: always
         run: |
+          # git -C ./librustzcash pull
           # we use this program for grepping code contextually, from within the rust tool
           cargo install ast-grep
 
