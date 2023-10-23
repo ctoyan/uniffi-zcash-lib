@@ -12,6 +12,7 @@ jobs:
         with:
           repository: zcash/librustzcash
           path: librustzcash
+          fetch-tags: true
 
       - uses: actions/checkout@v4
         with:
