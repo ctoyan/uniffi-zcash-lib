@@ -35,15 +35,8 @@ jobs:
       - name: Get librustzcash libraries used in uniffi-zcash-lib
         run: |
           source ./uniffi-zcash-lib/scripts/ci/libs.sh
-          kor=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
-          echo "$kor"
-          echo "USED_LIBS=$kor" >> $GITHUB_ENV
-          # {
-          #   echo 'USED_LIBS<<EOF'
-          #   source ./uniffi-zcash-lib/scripts/ci/libs.sh
-          #   get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml
-          #   echo EOF
-          # } >> "$GITHUB_ENV"
+          used_libs=$(get_libs librustzcash/Cargo.toml uniffi-zcash-lib/lib/Cargo.toml)
+          echo "USED_LIBS=$used_libs" >> $GITHUB_ENV
 
         # Exports:
         # OUTDATED_LIBS - list of library names, separated by ';', which are outdated (ex - 'zcash_primitives;zcash_address;')
@@ -122,7 +115,7 @@ jobs:
           CARGO_TERM_COLOR: always
         run: |
           # we use this program for grepping code contextually, from within the rust tool
-          cargo install ast-grep
+          # cargo install ast-grep
 
           grep_dir_absolute_path=$(realpath ./uniffi-zcash-lib/lib/uniffi-zcash)
           librustzcash_absolute_path=$(realpath ./librustzcash)
